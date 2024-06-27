@@ -56,6 +56,7 @@ import TextArea from "../Form/TextArea";
 import { sendPayWithEmail } from "@/actions/request.action";
 import { useAuth } from "@/context/auth.context";
 import { stringToBytes, stringToHex } from "viem";
+import { baseSepolia } from "viem/chains";
 
 type Props = {
   isOpen: boolean;
@@ -208,6 +209,7 @@ function SendPaymentModal({ isOpen, setIsOpen }: Props) {
           },
         ],
         capabilities,
+        chainId: baseSepolia.id
       });
       //   await writeContractAsync(
       //     {

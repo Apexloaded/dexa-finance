@@ -16,6 +16,7 @@ export async function POST(r: Request) {
   console.log("pm request", req);
   const method = req.method;
   const [userOp, entrypoint, chainId] = req.params;
+  console.log(req.params);
   const sponsorable = await willSponsor({ chainId, entrypoint, userOp });
   console.log("will sponsor", sponsorable);
   if (!sponsorable) {
