@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment, useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   Transition,
@@ -30,6 +30,7 @@ import useToast from "@/hooks/toast.hook";
 import { parseEther } from "ethers";
 import { useAuth } from "@/context/auth.context";
 import useClipBoard from "@/hooks/clipboard.hook";
+import { useWriteContracts, useCapabilities } from "wagmi/experimental";
 
 type Props = {
   isOpen: boolean;
@@ -45,7 +46,7 @@ function WithdrawModal({ isOpen, setIsOpen }: Props) {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ ...withdrawalResolver });
-  const { address } = useAccount();
+  const { address, chainId } = useAccount();
   const { paste } = useClipBoard();
   const { error, loading, success } = useToast();
   const [amount, setAmount] = useState<string>("0.00");
@@ -55,12 +56,31 @@ function WithdrawModal({ isOpen, setIsOpen }: Props) {
   const [tokenBalance, setTokenBalance] = useState<UserBalance>();
   const { dexaPayAddr, DexaPayAbi } = useDexa();
   const { user } = useAuth();
-  const { writeContractAsync, isPending } = useWriteContract();
+  const { writeContractsAsync, isPending } = useWriteContracts();
   const [options] = useState(
     Tokens.map((t) => {
       return { value: t.address, name: t.symbol, icon: t.icon };
     })
   );
+
+  const { data: availableCapabilities } = useCapabilities({
+    account: address,
+  });
+  const capabilities = useMemo(() => {
+    if (!availableCapabilities || !chainId) return {};
+    const capabilitiesForChain = availableCapabilities[chainId];
+    if (
+      capabilitiesForChain["paymasterService"] &&
+      capabilitiesForChain["paymasterService"].supported
+    ) {
+      return {
+        paymasterService: {
+          url: `${document.location.origin}/api/paymaster`,
+        },
+      };
+    }
+    return {};
+  }, [availableCapabilities]);
 
   const { data } = useReadContract({
     abi: DexaPayAbi,
@@ -100,12 +120,17 @@ function WithdrawModal({ isOpen, setIsOpen }: Props) {
       loading({
         msg: "Initiating withdrawal",
       });
-      await writeContractAsync(
+      await writeContractsAsync(
         {
-          abi: DexaPayAbi,
-          address: dexaPayAddr,
-          functionName: "transferExternal",
-          args: [to, parseEther(`${amount}`), token, ""],
+          contracts: [
+            {
+              abi: DexaPayAbi,
+              address: dexaPayAddr,
+              functionName: "transferExternal",
+              args: [to, parseEther(`${amount}`), token, ""],
+            },
+          ],
+          capabilities,
         },
         {
           onSuccess: async (data) => {

@@ -14,10 +14,11 @@ import { walletToLowercase } from "@/libs/helpers";
 import Auth, { IAuth } from "@/db/models/auth.model";
 
 export async function POST(r: Request) {
+  await dbConnect();
   const req = await r.json();
   const method = req.method;
   const [userOp, entrypoint, chainId] = req.params;
-  console.log(userOp);
+  const userWallet = walletToLowercase(userOp.sender);
 
   // Verify the entrypoint address
   if (!isValidAAEntrypoint({ entrypoint } as IsValidAAEntrypointOptions)) {
@@ -34,8 +35,6 @@ export async function POST(r: Request) {
     return NextResponse.json({ error: "invalid wallet" }, { status: 400 });
   }
 
-  await dbConnect();
-  const userWallet = walletToLowercase(userOp.sender);
   const user = await Auth.findOne<IAuth>({ wallet: userWallet });
   if (!user) {
     return NextResponse.json({ error: "Unauthorized access" }, { status: 400 });

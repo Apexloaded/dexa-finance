@@ -1,6 +1,12 @@
 "use client";
 
-import React, { Fragment, useState, useEffect, useCallback } from "react";
+import React, {
+  Fragment,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   Dialog,
   Transition,
@@ -37,6 +43,7 @@ import { isAddress } from "ethers";
 import debounce from "debounce";
 import { addBeneficiary } from "@/actions/beneficiary.action";
 import { queryClient } from "../RootProviders";
+import { useWriteContracts, useCapabilities } from "wagmi/experimental";
 
 type Props = {
   isOpen: boolean;
@@ -56,7 +63,7 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
     formState: { errors, isSubmitting },
   } = useForm(); //{ ...withdrawalResolver }
   const username = watch("username");
-  const { address } = useAccount();
+  const { address, chainId } = useAccount();
   const [activeTab, setActiveTab] = useState<string>("tab1");
   const [receiver, setReceiver] = useState<UserInterface>();
   const { paste } = useClipBoard();
@@ -65,13 +72,31 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
   const [resetKey, setResetKey] = useState<number>(0);
   const [selectedToken, setSelectedToken] = useState<Options>();
   const [tokenBalance, setTokenBalance] = useState<UserBalance>();
-  const { dexaPayAddr, DexaPayAbi } = useDexa();
-  const { writeContractAsync, isPending } = useWriteContract();
+  const { dexaPayAddr, DexaPayAbi } = useDexa();;
+  const { writeContractsAsync, isPending } = useWriteContracts();
   const [options] = useState(
     Tokens.map((t) => {
       return { value: t.address, name: t.symbol, icon: t.icon };
     })
   );
+  const { data: availableCapabilities } = useCapabilities({
+    account: address,
+  });
+  const capabilities = useMemo(() => {
+    if (!availableCapabilities || !chainId) return {};
+    const capabilitiesForChain = availableCapabilities[chainId];
+    if (
+      capabilitiesForChain["paymasterService"] &&
+      capabilitiesForChain["paymasterService"].supported
+    ) {
+      return {
+        paymasterService: {
+          url: `${document.location.origin}/api/paymaster`,
+        },
+      };
+    }
+    return {};
+  }, [availableCapabilities]);
 
   const { data } = useReadContract({
     abi: DexaPayAbi,
@@ -154,12 +179,17 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
         user: `${address}`,
         name: `${receiver?.name}`,
       });
-      await writeContractAsync(
+      await writeContractsAsync(
         {
-          abi: DexaPayAbi,
-          address: dexaPayAddr,
-          functionName: "transferInternal",
-          args: [receiverAddress, parseEther(`${amount}`), token, remark],
+          contracts: [
+            {
+              abi: DexaPayAbi,
+              address: dexaPayAddr,
+              functionName: "transferInternal",
+              args: [receiverAddress, parseEther(`${amount}`), token, remark],
+            },
+          ],
+          capabilities,
         },
         {
           onSuccess: async (data) => {

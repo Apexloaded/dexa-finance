@@ -97,24 +97,24 @@ function DepositModal({ isOpen, setIsOpen }: Props) {
       hash: requestHash,
     });
 
-//   const { data: availableCapabilities } = useCapabilities({
-//     account: address,
-//   });
-//   const capabilities = useMemo(() => {
-//     if (!availableCapabilities || !chainId) return {};
-//     const capabilitiesForChain = availableCapabilities[chainId];
-//     if (
-//       capabilitiesForChain["paymasterService"] &&
-//       capabilitiesForChain["paymasterService"].supported
-//     ) {
-//       return {
-//         paymasterService: {
-//           url: `${document.location.origin}/api/paymaster`,
-//         },
-//       };
-//     }
-//     return {};
-//   }, [availableCapabilities]);
+  const { data: availableCapabilities } = useCapabilities({
+    account: address,
+  });
+  const capabilities = useMemo(() => {
+    if (!availableCapabilities || !chainId) return {};
+    const capabilitiesForChain = availableCapabilities[chainId];
+    if (
+      capabilitiesForChain["paymasterService"] &&
+      capabilitiesForChain["paymasterService"].supported
+    ) {
+      return {
+        paymasterService: {
+          url: `${document.location.origin}/api/paymaster`,
+        },
+      };
+    }
+    return {};
+  }, [availableCapabilities]);
 
   useEffect(() => {
     if (request || !isConfirmed || !amount || !requestHash) return;
@@ -200,30 +200,24 @@ function DepositModal({ isOpen, setIsOpen }: Props) {
       if (isZero) {
         contractProps.value = parseEther(`${amount}`);
       }
-      console.log(defaultUrl);
-      writeContracts({
-        contracts: [{ ...contractProps }],
-        capabilities: {
-          paymasterService: {
-            url: "http://localhost:3000/api/paymaster-proxy",
-          },
+      writeContracts(
+        {
+          contracts: [{ ...contractProps }],
+          capabilities,
         },
-      });
-      //   await writeContractAsync(
-      //     { ...contractProps },
-      //     {
-      //       onSuccess: async (data) => {
-      //         success({
-      //           msg: `${amount} ${selectedToken?.name} deposited`,
-      //         });
-      //         closeModal();
-      //         resetForm();
-      //       },
-      //       onError(err) {
-      //         error({ msg: `${err.message}` });
-      //       },
-      //     }
-      //   );
+        {
+          onSuccess: async (data) => {
+            success({
+              msg: `${amount} ${selectedToken?.name} deposited`,
+            });
+            closeModal();
+            resetForm();
+          },
+          onError(err) {
+            error({ msg: `${err.message}` });
+          },
+        }
+      );
     } catch (err) {
       if (err instanceof Error) {
         error({ msg: err.message });
