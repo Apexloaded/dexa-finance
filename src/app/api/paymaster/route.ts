@@ -16,12 +16,12 @@ export async function POST(r: Request) {
   console.log("pm request", req);
   const method = req.method;
   const [userOp, entrypoint, chainId] = req.params;
-  console.log(req.params);
-  const sponsorable = await willSponsor({ chainId, entrypoint, userOp });
-  console.log("will sponsor", sponsorable);
-  if (!sponsorable) {
-    return Response.json({ error: "Not a sponsorable operation" });
-  }
+  // console.log(req.params);
+  // const sponsorable = await willSponsor({ chainId, entrypoint, userOp });
+  // console.log("will sponsor", sponsorable);
+  // if (!sponsorable) {
+  //   return Response.json({ error: "Not a sponsorable operation" });
+  // }
 
   if (method === "pm_getPaymasterStubData") {
     const result = await paymasterClient.getPaymasterStubData({

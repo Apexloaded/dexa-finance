@@ -30,12 +30,11 @@ export async function willSponsor({
   entrypoint: string;
   userOp: UserOperation<"v0.6">;
 }) {
-  console.log("HERE");
   // check chain id
-  console.log("chain", chainId);
-  console.log("baseSepolia", baseSepolia.id);
-  console.log("chain id: ", chainId !== baseSepolia.id);
-  if (chainId !== baseSepolia.id) return false;
+  //   console.log("chain", chainId);
+  //   console.log("baseSepolia", baseSepolia.id);
+  //   console.log("chain id: ", chainId !== baseSepolia.id);
+  //   if (chainId !== baseSepolia.id) return false;
 
   // check entrypoint
   // not strictly needed given below check on implementation address, but leaving as example
