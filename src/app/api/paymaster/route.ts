@@ -13,22 +13,11 @@ import dbConnect from "@/db/db.config";
 import { walletToLowercase } from "@/libs/helpers";
 import Auth, { IAuth } from "@/db/models/auth.model";
 
-async function willSponsorByTxCount(wallet: string) {
-  await dbConnect();
-  const userWallet = walletToLowercase(wallet);
-  const user = await Auth.findOne<IAuth>({ wallet: userWallet });
-  if (!user) return false;
-
-  const remainingFreeTransactions = Math.max(0, 5 - user.txCount);
-  if (remainingFreeTransactions < 1) return false;
-
-  return true;
-}
-
 export async function POST(r: Request) {
   const req = await r.json();
   const method = req.method;
   const [userOp, entrypoint, chainId] = req.params;
+  console.log(userOp);
 
   // Verify the entrypoint address
   if (!isValidAAEntrypoint({ entrypoint } as IsValidAAEntrypointOptions)) {
@@ -45,10 +34,15 @@ export async function POST(r: Request) {
     return NextResponse.json({ error: "invalid wallet" }, { status: 400 });
   }
 
-  console.log(userOp);
-  const response = await willSponsorByTxCount(userOp.sender);
-  console.log(response);
-  if (!response) {
+  await dbConnect();
+  const userWallet = walletToLowercase(userOp.sender);
+  const user = await Auth.findOne<IAuth>({ wallet: userWallet });
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 400 });
+  }
+
+  const remainingFreeTransactions = Math.max(0, 5 - user.txCount);
+  if (remainingFreeTransactions < 1) {
     return NextResponse.json({ error: "No free transaction" }, { status: 400 });
   }
 
