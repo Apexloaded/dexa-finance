@@ -9,19 +9,27 @@ import type {
   IsWalletACoinbaseSmartWalletOptions,
 } from "@coinbase/onchainkit/wallet";
 import { client, paymasterClient } from "@/libs/paymasterClient";
-import { willSponsor } from "@/libs/willSponsor";
 
 export async function POST(r: Request) {
   const req = await r.json();
   console.log("pm request", req);
   const method = req.method;
   const [userOp, entrypoint, chainId] = req.params;
-  // console.log(req.params);
-  // const sponsorable = await willSponsor({ chainId, entrypoint, userOp });
-  // console.log("will sponsor", sponsorable);
-  // if (!sponsorable) {
-  //   return Response.json({ error: "Not a sponsorable operation" });
-  // }
+
+  // Verify the entrypoint address
+  if (!isValidAAEntrypoint({ entrypoint } as IsValidAAEntrypointOptions)) {
+    return NextResponse.json({ error: "invalid entrypoint" }, { status: 400 });
+  }
+
+  // Validate the User Operation by checking if the sender address is a proxy with the expected bytecode.
+  if (
+    !(await isWalletACoinbaseSmartWallet({
+      client,
+      userOp,
+    } as IsWalletACoinbaseSmartWalletOptions))
+  ) {
+    return NextResponse.json({ error: "invalid wallet" }, { status: 400 });
+  }
 
   if (method === "pm_getPaymasterStubData") {
     const result = await paymasterClient.getPaymasterStubData({
