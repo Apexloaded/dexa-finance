@@ -144,7 +144,9 @@ export async function verifyNonceAuth({
       wallet,
     };
 
+    console.log(payload);
     const response = await postApi("auth/nonce/verify", payload);
+    console.log(response);
     const data = response.data;
     if (data.status == true && data.statusCode == 201) {
       const session = data.data.token;

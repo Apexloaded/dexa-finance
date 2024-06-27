@@ -15,6 +15,7 @@ export const getApi = async (url: string, headers?: any) => {
 
 export const postApi = async (url: string, data: any) => {
   const apiUrl = `${API_URL}/${url}`;
+  console.log(apiUrl);
   const payload = data;
   return await axiosInstance.post(apiUrl, payload, {
     withCredentials: true,
