@@ -9,7 +9,21 @@ import type {
   IsWalletACoinbaseSmartWalletOptions,
 } from "@coinbase/onchainkit/wallet";
 import { client, paymasterClient } from "@/libs/paymasterClient";
-import { fetchTxCount } from "@/actions/transaction.action";
+import dbConnect from "@/db/db.config";
+import { walletToLowercase } from "@/libs/helpers";
+import Auth, { IAuth } from "@/db/models/auth.model";
+
+async function willSponsorByTxCount(wallet: string) {
+  await dbConnect();
+  const userWallet = walletToLowercase(wallet);
+  const user = await Auth.findOne<IAuth>({ wallet: userWallet });
+  if (!user) return false;
+
+  const remainingFreeTransactions = Math.max(0, 5 - user.txCount);
+  if (remainingFreeTransactions < 1) return false;
+
+  return true;
+}
 
 export async function POST(r: Request) {
   const req = await r.json();
@@ -31,9 +45,10 @@ export async function POST(r: Request) {
     return NextResponse.json({ error: "invalid wallet" }, { status: 400 });
   }
 
-  const response = await fetchTxCount();
+  console.log(userOp);
+  const response = await willSponsorByTxCount(userOp.sender);
   console.log(response);
-  if (response.status != true || response.data == 0) {
+  if (!response) {
     return NextResponse.json({ error: "No free transaction" }, { status: 400 });
   }
 

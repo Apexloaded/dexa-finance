@@ -2,6 +2,7 @@
 
 import { IActionResponse } from "@/interfaces/response.interface";
 import { getApi } from "./api.action";
+import dbConnect from "@/db/db.config";
 
 export async function fetchTxCount(): Promise<IActionResponse> {
   try {
@@ -19,3 +20,4 @@ export async function fetchTxCount(): Promise<IActionResponse> {
     };
   }
 }
+
