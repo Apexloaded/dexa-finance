@@ -9,10 +9,10 @@ import type {
   IsWalletACoinbaseSmartWalletOptions,
 } from "@coinbase/onchainkit/wallet";
 import { client, paymasterClient } from "@/libs/paymasterClient";
+import { fetchTxCount } from "@/actions/transaction.action";
 
 export async function POST(r: Request) {
   const req = await r.json();
-  console.log("pm request", req);
   const method = req.method;
   const [userOp, entrypoint, chainId] = req.params;
 
@@ -31,17 +31,21 @@ export async function POST(r: Request) {
     return NextResponse.json({ error: "invalid wallet" }, { status: 400 });
   }
 
+  const response = await fetchTxCount();
+  console.log(response);
+  if (response.status != true || response.data == 0) {
+    return NextResponse.json({ error: "No free transaction" }, { status: 400 });
+  }
+
   if (method === "pm_getPaymasterStubData") {
     const result = await paymasterClient.getPaymasterStubData({
       userOperation: userOp,
     });
-    console.log("result", result);
     return Response.json({ result });
   } else if (method === "pm_getPaymasterData") {
     const result = await paymasterClient.getPaymasterData({
       userOperation: userOp,
     });
-    console.log("Paymaster Date", result);
     return Response.json({ result });
   }
   return Response.json({ error: "Method not found" });
