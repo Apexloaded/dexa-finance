@@ -32,9 +32,15 @@ export async function willSponsor({
 }) {
   console.log("HERE");
   // check chain id
+  console.log("chain id: ", chainId !== baseSepolia.id);
   if (chainId !== baseSepolia.id) return false;
+
   // check entrypoint
   // not strictly needed given below check on implementation address, but leaving as example
+  console.log(
+    "entrypoint: ",
+    entrypoint.toLowerCase() !== ENTRYPOINT_ADDRESS_V06.toLowerCase()
+  );
   if (entrypoint.toLowerCase() !== ENTRYPOINT_ADDRESS_V06.toLowerCase())
     return false;
 
@@ -46,6 +52,11 @@ export async function willSponsor({
       // no code at address, check that the initCode is deploying a Coinbase Smart Wallet
       // factory address is first 20 bytes of initCode after '0x'
       const factoryAddress = userOp.initCode.slice(0, 42);
+      console.log(
+        "is factory address 20 bytes",
+        factoryAddress.toLowerCase() !==
+          coinbaseSmartWalletFactoryAddress.toLowerCase()
+      );
       if (
         factoryAddress.toLowerCase() !==
         coinbaseSmartWalletFactoryAddress.toLowerCase()
@@ -53,6 +64,7 @@ export async function willSponsor({
         return false;
     } else {
       // code at address, check that it is a proxy to the expected implementation
+      console.log("code at address", code != coinbaseSmartWalletProxyBytecode);
       if (code != coinbaseSmartWalletProxyBytecode) return false;
 
       // check that userOp.sender proxies to expected implementation
@@ -67,6 +79,10 @@ export async function willSponsor({
         [{ type: "address" }],
         implementation
       )[0];
+      console.log(
+        "userOp.sender",
+        implementationAddress != coinbaseSmartWalletV1Implementation
+      );
       if (implementationAddress != coinbaseSmartWalletV1Implementation)
         return false;
     }
@@ -78,7 +94,9 @@ export async function willSponsor({
     });
 
     // keys.coinbase.com always uses executeBatch
+    console.log("executeBatch", calldata.functionName !== "executeBatch");
     if (calldata.functionName !== "executeBatch") return false;
+    console.log("calldata args", !calldata.args || calldata.args.length < 1);
     if (!calldata.args || calldata.args.length < 1) return false;
 
     const calls = calldata.args[0] as {
@@ -87,16 +105,25 @@ export async function willSponsor({
       data: Hex;
     }[];
     // modify if want to allow batch calls to your contract
+    console.log("call length", calls.length > 2);
     if (calls.length > 2) return false;
 
     let callToCheckIndex = 0;
     if (calls.length > 1) {
       // if there is more than one call, check if the first is a magic spend call
+      console.log(
+        "is more than one magic spend",
+        calls[0].target.toLowerCase() !== magicSpendAddress.toLowerCase()
+      );
       if (calls[0].target.toLowerCase() !== magicSpendAddress.toLowerCase())
         return false;
       callToCheckIndex = 1;
     }
 
+    console.log(
+      "dexa pay address",
+      calls[callToCheckIndex].target.toLowerCase() !== dexaPayAddr.toLowerCase()
+    );
     if (
       calls[callToCheckIndex].target.toLowerCase() !== dexaPayAddr.toLowerCase()
     )
@@ -106,8 +133,10 @@ export async function willSponsor({
       abi: DexaPay,
       data: calls[callToCheckIndex].data,
     });
+    console.log("is pay by email", innerCalldata.functionName !== "payByEmail");
     if (innerCalldata.functionName !== "payByEmail") return false;
 
+    console.log("TRUE");
     return true;
   } catch (e) {
     console.error(`willSponsor check failed: ${e}`);
