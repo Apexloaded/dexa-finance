@@ -32,6 +32,8 @@ export async function willSponsor({
 }) {
   console.log("HERE");
   // check chain id
+  console.log("chain", chainId);
+  console.log("baseSepolia", baseSepolia.id);
   console.log("chain id: ", chainId !== baseSepolia.id);
   if (chainId !== baseSepolia.id) return false;
 
