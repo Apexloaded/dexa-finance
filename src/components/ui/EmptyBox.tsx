@@ -14,7 +14,7 @@ function EmptyBox({ title = header, message = msg }: Props) {
   return (
     <div className="text-center">
       <Lottie animationData={emptyAnim} className="mb-3 h-60" loop={false} />
-      <p className="text-2xl">{title}</p>
+      <p className="text-xl">{title}</p>
       <p className="text-medium">{message}</p>
     </div>
   );

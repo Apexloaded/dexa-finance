@@ -11,6 +11,7 @@ type PayWithEmail = {
   tokenName: string;
   from: string;
   senderName: string;
+  isRequest?: boolean;
 };
 
 type IClaimPayByEmail = {

@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  Fragment,
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import {
   Dialog,
   Transition,
@@ -26,28 +20,19 @@ import {
   useBalance,
   useReadContract,
   useWaitForTransactionReceipt,
-  useWriteContract,
 } from "wagmi";
-import { useWriteContracts, useCapabilities } from "wagmi/experimental";
 import { formatCur, toOxString, weiToUnit } from "@/libs/helpers";
-import { withdrawalResolver } from "@/schemas/withdraw.schema";
 import ShowError from "../Form/ShowError";
-import useToast from "@/hooks/toast.hook";
-import { parseEther, ZeroAddress } from "ethers";
-import { useAuth } from "@/context/auth.context";
+import { ZeroAddress } from "ethers";
 import { useDexa } from "@/context/dexa.context";
 import { depositResolver } from "@/schemas/deposit.schema";
-import isLocal from "@/libs/isLocal";
+import useDeposit from "@/hooks/transactions/deposit.hook";
+import useToast from "@/hooks/toast.hook";
 
 type Props = {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
 };
-
-const isLocalEnv = isLocal();
-const defaultUrl = isLocalEnv
-  ? process.env.NEXT_PUBLIC_PAYMASTER_URL
-  : `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}/api/paymaster`;
 
 function DepositModal({ isOpen, setIsOpen }: Props) {
   const {
@@ -58,24 +43,27 @@ function DepositModal({ isOpen, setIsOpen }: Props) {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ ...depositResolver });
-  const { address, chainId } = useAccount();
-  const { error, loading, success } = useToast();
+  const { address } = useAccount();
   const [amount, setAmount] = useState<string>("0.00");
   const [resetKey, setResetKey] = useState<number>(0);
   const [request, setRequest] = useState<boolean>(false);
   const [requestHash, setRequestHash] = useState<`0x${string}`>();
   const [selectedToken, setSelectedToken] = useState<Options>();
   const [tokenBalance, setTokenBalance] = useState<number>();
+  const { error } = useToast();
   const [options] = useState(
     Tokens.map((t) => {
       return { value: t.address, name: t.symbol, icon: t.icon };
     })
   );
-  const { dexaPayAddr, DexaPayAbi, ERC20ABI } = useDexa();
-  const { user } = useAuth();
+  const { dexaPayAddr, ERC20ABI } = useDexa();
   const { data: ethBalance } = useBalance({ address: address });
-  const { writeContractAsync, isPending } = useWriteContract();
-  const { data: callID, writeContracts } = useWriteContracts();
+  const {
+    isPending,
+    deposit: initDeposit,
+    onSubmit: initSubmit,
+  } = useDeposit();
+
   const { data: allowance } = useReadContract({
     abi: ERC20ABI,
     functionName: "allowance",
@@ -96,25 +84,6 @@ function DepositModal({ isOpen, setIsOpen }: Props) {
     useWaitForTransactionReceipt({
       hash: requestHash,
     });
-
-  const { data: availableCapabilities } = useCapabilities({
-    account: address,
-  });
-  const capabilities = useMemo(() => {
-    if (!availableCapabilities || !chainId) return {};
-    const capabilitiesForChain = availableCapabilities[chainId];
-    if (
-      capabilitiesForChain["paymasterService"] &&
-      capabilitiesForChain["paymasterService"].supported
-    ) {
-      return {
-        paymasterService: {
-          url: `${document.location.origin}/api/paymaster`,
-        },
-      };
-    }
-    return {};
-  }, [availableCapabilities]);
 
   useEffect(() => {
     if (request || !isConfirmed || !amount || !requestHash) return;
@@ -150,82 +119,29 @@ function DepositModal({ isOpen, setIsOpen }: Props) {
   };
 
   const onSubmit = async (payload: FieldValues) => {
-    const { token, amount } = payload;
-    try {
-      const isReq = request && token != ZeroAddress;
-      if (isReq) {
-        loading({
-          msg: "Requesting permission",
-        });
-        await writeContractAsync(
-          {
-            abi: ERC20ABI,
-            address: toOxString(token),
-            functionName: "approve",
-            args: [dexaPayAddr, parseEther(`${amount}`)],
-          },
-          {
-            onSuccess: async (data) => {
-              success({ msg: "Permission granted" });
-              setRequest(false);
-              setRequestHash(data);
-            },
-          }
-        );
-        return;
-      }
-      await deposit(token, amount);
-    } catch (err) {
-      if (err instanceof Error) {
-        error({ msg: err.message });
-      }
-      if (err && typeof err === "object") {
-        error({ msg: JSON.stringify(err) });
-      }
-    }
+
+      const { token, amount } = payload;
+      await initSubmit({
+        amount,
+        request,
+        setRequest,
+        setRequestHash,
+        resetForm,
+        tokenName: `${selectedToken?.name}`,
+        closeModal,
+        token,
+      });
+
   };
 
   const deposit = async (token: string, amount: string) => {
-    try {
-      loading({
-        msg: "Depositing",
-      });
-      const isZero = token == ZeroAddress;
-      const contractProps: any = {
-        abi: DexaPayAbi,
-        address: dexaPayAddr,
-        functionName: "deposit",
-        args: [parseEther(`${amount}`), token],
-      };
-      if (isZero) {
-        contractProps.value = parseEther(`${amount}`);
-      }
-      writeContracts(
-        {
-          contracts: [{ ...contractProps }],
-          capabilities,
-        },
-        {
-          onSuccess: async (data) => {
-            success({
-              msg: `${amount} ${selectedToken?.name} deposited`,
-            });
-            closeModal();
-            resetForm();
-          },
-          onError(err) {
-            error({ msg: `${err.message}` });
-          },
-        }
-      );
-    } catch (err) {
-      if (err instanceof Error) {
-        error({ msg: err.message });
-      }
-      if (err && typeof err === "object") {
-        error({ msg: JSON.stringify(err) });
-      }
-    }
+    await initDeposit({
+      token,
+      amount,
+      closeModal: closeModal,
+      resetForm: resetForm,
+      tokenName: `${selectedToken?.name}`,
+    });
   };
 
   const closeModal = () => {
@@ -302,6 +218,7 @@ function DepositModal({ isOpen, setIsOpen }: Props) {
                             onChange(token.value);
                           }}
                           key={resetKey}
+                          className="bg-white border border-medium/60 rounded-md"
                         />
                       )}
                       name={"token"}
@@ -323,10 +240,10 @@ function DepositModal({ isOpen, setIsOpen }: Props) {
                         <Controller
                           control={control}
                           render={({ field: { onChange, value } }) => (
-                            <div className="flex items-center relative bg-light">
+                            <div className="flex items-center overflow-hidden relative bg-white border rounded-md border-medium/60">
                               <Input
                                 isOutline={false}
-                                className="bg-light text-sm"
+                                className="bg-white text-sm"
                                 placeholder="Min amount: 0.01"
                                 onChange={(e) => {
                                   onChange(e);

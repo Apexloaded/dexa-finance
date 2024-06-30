@@ -14,9 +14,10 @@ import { MoveDownLeftIcon, MoveUpRightIcon } from "lucide-react";
 
 type Props = {
   tx: ITransaction;
+  isAddrFull?: boolean;
 };
 
-function TxBodyItems({ tx }: Props) {
+function TxBodyItems({ tx, isAddrFull = false }: Props) {
   const { user } = useAuth();
   const isWithdraw = tx.txType == TxType.Withdraw && tx.txFrom == user?.wallet;
   const isDeposit =
@@ -75,10 +76,10 @@ function TxBodyItems({ tx }: Props) {
           </p>
         </td>
         <td className="px-4">
-          <TxAddr wallet={tx.txFrom} />
+          <TxAddr isfull={isAddrFull} wallet={tx.txFrom} />
         </td>
         <td className="px-4">
-          <TxAddr wallet={tx.txTo} />
+          <TxAddr isfull={isAddrFull} wallet={tx.txTo} />
         </td>
         <td className="px-4">
           <p className="text-sm text-nowrap">

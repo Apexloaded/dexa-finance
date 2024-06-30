@@ -17,6 +17,7 @@ export type AuthContextType = {
   ) => Promise<QueryObserverResult<unknown, ReadContractErrorType>>;
   balances?: UserBalance[];
   totalValue?: UserBalance;
+  isSmartWallet: boolean;
 };
 
 interface Props {

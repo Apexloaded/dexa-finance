@@ -51,6 +51,11 @@ import SendPaymentModal from "@/components/Payments/SendPaymentModal";
 import { IPaymentRequest } from "@/interfaces/pay-request.interface";
 import { Tokens } from "@/libs/tokens";
 import PaymentsTable from "@/components/Payments/PaymentsTable";
+import RequestPaymentModal from "@/components/Payments/RequestPaymentModal";
+import TxCount from "@/components/Transactions/TxCount";
+import UserPFP from "@/components/ui/UserPFP";
+import { useRouter } from "next/navigation";
+import { routes } from "@/libs/routes";
 
 const sortRequestByDate = (req: IPaymentRequest[]) => {
   return req
@@ -73,6 +78,7 @@ const mapReq = (request: IPaymentRequest) => {
 };
 
 function Wallet() {
+  const router = useRouter();
   const isHidden = useAppSelector(selectHideBalance);
   const dispatch = useAppDispatch();
   const { address } = useAccount();
@@ -80,6 +86,7 @@ function Wallet() {
   const [totalValue, setTotalValue] = useState<UserBalance>();
   const [activeTab, setActiveTab] = useState("tab1");
   const [isSendModal, setSendModal] = useState<boolean>(false);
+  const [isRequestModal, setRequestModal] = useState<boolean>(false);
   const [incomingReq, setIncomingReq] = useState<IPaymentRequest[]>([]);
   const [sentReq, setSentReq] = useState<IPaymentRequest[]>([]);
   const [paidReq, setPaidReq] = useState<IPaymentRequest[]>([]);
@@ -144,9 +151,10 @@ function Wallet() {
         <Section>
           <div className="flex h-full flex-col overflow-scroll scrollbar-hide">
             <div className="flex items-center pr-5 py-4 pl-2 z-50 bg-white justify-between sticky top-0">
-              <Header title="Payments" isBack={true} />
-              <div>
-                <p>H</p>
+              <Header title="Email Pay" isBack={true} />
+              <div className="flex items-center gap-x-2">
+                <TxCount />
+                <UserPFP name={user?.name} />
               </div>
             </div>
             <div>
@@ -172,17 +180,31 @@ function Wallet() {
                   />
                 </div>
                 <div className="flex items-center gap-x-5 pt-5">
-                  <Button type="button" kind="primary" shape="NORMAL">
-                    Request
-                  </Button>
                   <Button
                     type="button"
-                    kind="clear"
+                    kind="primary"
+                    shape="NORMAL"
+                    className="border border-primary"
+                    onClick={() => router.push(routes.app.payments.create)}
+                  >
+                    <p className="text-white text-sm">Request</p>
+                  </Button>
+                  {/* <Button
+                    type="button"
+                    kind="default"
                     shape="NORMAL"
                     className="bg-light hover:bg-medium/20"
                     onClick={() => setSendModal(true)}
                   >
-                    Send
+                    <p className="text-primary text-sm">Send Pay</p>
+                  </Button> */}
+                  <Button
+                    type="button"
+                    kind="clear"
+                    className="border border-primary bg-white hover:bg-light"
+                    onClick={() => setSendModal(true)}
+                  >
+                    <p className="text-primary text-sm">Send Pay</p>
                   </Button>
                 </div>
                 <div className="flex items-center gap-x-5 pt-5 max-w-lg">
@@ -258,6 +280,10 @@ function Wallet() {
       </Container>
 
       <SendPaymentModal setIsOpen={setSendModal} isOpen={isSendModal} />
+      <RequestPaymentModal
+        setIsOpen={setRequestModal}
+        isOpen={isRequestModal}
+      />
     </>
   );
 }

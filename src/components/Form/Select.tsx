@@ -13,6 +13,7 @@ interface Props {
   placeholder?: string;
   onSelect: (option: Options) => void;
   isReset?: boolean;
+  className?: string;
 }
 
 export default function Select({
@@ -20,6 +21,7 @@ export default function Select({
   placeholder = "Select Option",
   onSelect,
   isReset = false,
+  className
 }: Props) {
   const defaultValue = {
     name: placeholder,
@@ -44,7 +46,7 @@ export default function Select({
     <Listbox value={selectedOption} onChange={onChange}>
       <div className="relative mt-1">
         <Listbox.Button
-          className={`w-full px-4 text-left bg-light text-base h-[3.2rem] flex items-center justify-between`}
+          className={`w-full px-4 text-left bg-light ${className} text-base h-[3.2rem] flex items-center justify-between`}
         >
           <div className="flex items-center gap-2 w-full overflow-hidden">
             {selectedOption?.icon && (

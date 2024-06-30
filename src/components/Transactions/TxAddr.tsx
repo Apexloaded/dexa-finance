@@ -6,13 +6,18 @@ import { CheckCheck, CopyIcon } from "lucide-react";
 
 type Props = {
   wallet: string;
+  isfull?: boolean;
 };
 
-function TxAddr({ wallet }: Props) {
+function TxAddr({ wallet, isfull = false }: Props) {
   const { isCopied, copy } = useClipBoard();
   return (
     <div className="flex items-center gap-x-1">
-      <p className="text-sm">{formatWalletAddress(wallet, "...", 10, 10)}</p>
+      {isfull ? (
+        <p className="text-sm">{formatWalletAddress(wallet, "...", 20, 20)}</p>
+      ) : (
+        <p className="text-sm">{formatWalletAddress(wallet, "...", 10, 10)}</p>
+      )}
       {isCopied ? (
         <CheckCheck size={16} className="text-primary" />
       ) : (

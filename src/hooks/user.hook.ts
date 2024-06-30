@@ -28,7 +28,12 @@ import {
 } from "@/slices/account/auth.slice";
 import DexaPay from "@/contracts/DexaPay";
 import { DEXA_PAY } from "@/config/constants";
-import { toOxString, walletToLowercase, weiToUnit } from "@/libs/helpers";
+import {
+  timestampToDate,
+  toOxString,
+  walletToLowercase,
+  weiToUnit,
+} from "@/libs/helpers";
 import { StorageTypes } from "@/libs/enums";
 import {
   selectHideBalance,
@@ -37,6 +42,12 @@ import {
 import { initLogout } from "@/actions/auth.action";
 import { Tokens } from "@/libs/tokens";
 import useConverter from "./converter.hook";
+import {
+  IsWalletACoinbaseSmartWalletOptions,
+  isWalletACoinbaseSmartWallet,
+} from "@coinbase/onchainkit/wallet";
+import { client } from "@/libs/paymasterClient";
+import { UserOperation } from "permissionless";
 
 const dexaPayAddr = toOxString(DEXA_PAY);
 
@@ -50,6 +61,7 @@ function useUser() {
   const [user, setUser] = useState<UserInterface>();
   const [profileProgress, setProfileProgress] = useState<number>();
   const [balances, setBalances] = useState<UserBalance[]>([]);
+  const [isSmartWallet, setIsSmartWallet] = useState<boolean>(false);
   const [totalValue, setTotalValue] = useState<UserBalance>();
   const { connectors } = useConnect();
   const { address, isDisconnected, chainId, isReconnecting } = useAccount();
@@ -89,6 +101,20 @@ function useUser() {
       logout();
     },
   });
+
+  useEffect(() => {
+    const checkWallet = async () => {
+      if (address) {
+        const userOperation = { sender: address } as UserOperation<"v0.6">;
+        const isSmartWallet = await isWalletACoinbaseSmartWallet({
+          client: client,
+          userOp: userOperation,
+        } as IsWalletACoinbaseSmartWalletOptions);
+        setIsSmartWallet(isSmartWallet.isCoinbaseSmartWallet);
+      }
+    };
+    void checkWallet();
+  }, [address]);
 
   useEffect(() => {
     const init = async () => {
@@ -137,9 +163,10 @@ function useUser() {
   useEffect(() => {
     const init = () => {
       if (data) {
-        const userData = data as any;
+        const { createdAt, ...userData } = data as any;
         setUser({
           id: `${address}`,
+          createdAt: timestampToDate(createdAt).toDateString(),
           ...userData,
         });
       }
@@ -189,6 +216,7 @@ function useUser() {
     findUser,
     balances,
     totalValue,
+    isSmartWallet,
   };
 }
 

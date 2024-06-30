@@ -10,11 +10,14 @@ export const routes = {
     home: "/home",
     payments: {
       index: "/payments",
+      create: "/payments/create",
       deposit: "/wallet/deposit",
       withdraw: "/wallet/withdraw",
     },
     bills: {
       index: "/bills",
+      create: "/bills/create",
+      pay: "/bills/pay",
     },
     savings: {
       index: "/savings",

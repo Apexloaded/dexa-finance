@@ -61,6 +61,7 @@ function SignInModal({ setModal }: Props) {
       // }
 
       const res = await getNonce(toOxString(wallet));
+      console.log(res);
       if (!res.status) {
         error({ msg: `${res.message}` });
         return;
@@ -105,6 +106,7 @@ function SignInModal({ setModal }: Props) {
         }
       );
     } catch (e: any) {
+      console.log(e);
       error({ msg: e.code === 4001 ? "Failed to sign in!" : e.response.data });
     }
   };

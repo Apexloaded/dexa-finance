@@ -4,12 +4,16 @@ export const txType = {
   "0": "Deposit",
   "1": "Withdraw",
   "2": "Transfer",
+  "3": "Fund Bill",
+  "4": "Remite Bill",
 };
 
 export enum TxType {
   Deposit = "0",
   Withdraw = "1",
   Transfer = "2",
+  FundBill = "3",
+  RemiteBill = "4",
 }
 
 export interface ITransaction {

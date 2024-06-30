@@ -3,11 +3,14 @@ import { baseSepolia } from "viem/chains";
 export const EXPECTED_CHAIN = baseSepolia;
 export const BASE_RPC_URL = "/api/rpc";
 export const DEXA_PAY = process.env.NEXT_PUBLIC_DEXA_PAY || "";
-export const DEXA_BILLS = process.env.NEXT_PUBLIC_DEXA_BILLS || "";
+export const DEXA_BILL = process.env.NEXT_PUBLIC_DEXA_BILL || "";
+export const HOSTNAME = process.env.NEXT_PUBLIC_HOSTNAME || "https://www.dexapay.xyz";
+export const PAYMASTER_URL = process.env.NEXT_PUBLIC_PAYMASTER_URL;
 export const RECAPTCHA_SECRET =
   process.env.NEXT_PRIVATE_RECAPTCHA_SECRET_KEY || "";
 export const SESSION_SECRET = process.env.SESSION_SECRET;
 export const API = process.env.NEXT_PUBLIC_API_URL;
+
 export const coinbaseSmartWalletProxyBytecode =
   "0x363d3d373d3d363d7f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc545af43d6000803e6038573d6000fd5b3d6000f3";
 export const coinbaseSmartWalletV1Implementation =

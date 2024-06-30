@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  Fragment,
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { Fragment, useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   Transition,
@@ -25,25 +19,20 @@ import { ClipboardPenLineIcon, User2Icon, XIcon } from "lucide-react";
 import Select, { Options } from "../Form/Select";
 import { Tokens } from "@/libs/tokens";
 import { useForm, Controller, FieldValues } from "react-hook-form";
-import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { useDexa } from "@/context/dexa.context";
 import { UserBalance, UserInterface } from "@/interfaces/user.interface";
 import {
   formatWalletAddress,
   isLikelyUsername,
-  toOxString,
   walletToLowercase,
   weiToUnit,
 } from "@/libs/helpers";
 import ShowError from "../Form/ShowError";
 import useClipBoard from "@/hooks/clipboard.hook";
-import useToast from "@/hooks/toast.hook";
-import { parseEther } from "ethers";
 import { isAddress } from "ethers";
 import debounce from "debounce";
-import { addBeneficiary } from "@/actions/beneficiary.action";
-import { queryClient } from "../RootProviders";
-import { useWriteContracts, useCapabilities } from "wagmi/experimental";
+import useTransfer from "@/hooks/transactions/transfer.hook";
 
 type Props = {
   isOpen: boolean;
@@ -52,7 +41,6 @@ type Props = {
 
 function TransferModal({ isOpen, setIsOpen }: Props) {
   const {
-    resetField,
     trigger,
     watch,
     control,
@@ -61,42 +49,23 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
     handleSubmit,
     clearErrors,
     formState: { errors, isSubmitting },
-  } = useForm(); //{ ...withdrawalResolver }
+  } = useForm();
   const username = watch("username");
-  const { address, chainId } = useAccount();
+  const { address } = useAccount();
   const [activeTab, setActiveTab] = useState<string>("tab1");
   const [receiver, setReceiver] = useState<UserInterface>();
   const { paste } = useClipBoard();
-  const { error, loading, success } = useToast();
   const [amount, setAmount] = useState<string>("0.00");
   const [resetKey, setResetKey] = useState<number>(0);
   const [selectedToken, setSelectedToken] = useState<Options>();
   const [tokenBalance, setTokenBalance] = useState<UserBalance>();
-  const { dexaPayAddr, DexaPayAbi } = useDexa();;
-  const { writeContractsAsync, isPending } = useWriteContracts();
+  const { dexaPayAddr, DexaPayAbi } = useDexa();
+  const { onSubmit: initOnSubmit, isPending } = useTransfer();
   const [options] = useState(
     Tokens.map((t) => {
       return { value: t.address, name: t.symbol, icon: t.icon };
     })
   );
-  const { data: availableCapabilities } = useCapabilities({
-    account: address,
-  });
-  const capabilities = useMemo(() => {
-    if (!availableCapabilities || !chainId) return {};
-    const capabilitiesForChain = availableCapabilities[chainId];
-    if (
-      capabilitiesForChain["paymasterService"] &&
-      capabilitiesForChain["paymasterService"].supported
-    ) {
-      return {
-        paymasterService: {
-          url: `${document.location.origin}/api/paymaster`,
-        },
-      };
-    }
-    return {};
-  }, [availableCapabilities]);
 
   const { data } = useReadContract({
     abi: DexaPayAbi,
@@ -168,50 +137,18 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
   };
 
   const onSubmit = async (payload: FieldValues) => {
-    try {
-      const { to, token, amount, remark } = payload;
-      loading({
-        msg: "Initiating transfer",
-      });
-      const receiverAddress = activeTab == "tab1" ? to : receiver?.wallet;
-      await addBeneficiary({
-        wallet: receiverAddress,
-        user: `${address}`,
-        name: `${receiver?.name}`,
-      });
-      await writeContractsAsync(
-        {
-          contracts: [
-            {
-              abi: DexaPayAbi,
-              address: dexaPayAddr,
-              functionName: "transferInternal",
-              args: [receiverAddress, parseEther(`${amount}`), token, remark],
-            },
-          ],
-          capabilities,
-        },
-        {
-          onSuccess: async (data) => {
-            success({
-              msg: `${amount} ${tokenBalance?.symbol} transferred succesfully`,
-            });
-            closeModal();
-            resetForm();
-          },
-          onError(err) {
-            error({ msg: `${err.message}` });
-          },
-        }
-      );
-    } catch (err) {
-      if (err instanceof Error) {
-        error({ msg: err.message });
-      }
-      if (err && typeof err === "object") {
-        error({ msg: JSON.stringify(err) });
-      }
-    }
+    const { to, token, amount, remark } = payload;
+    const receiverAddress = activeTab == "tab1" ? to : receiver?.wallet;
+    await initOnSubmit({
+      token,
+      amount,
+      to: receiverAddress,
+      remark,
+      resetForm,
+      closeModal,
+      username: `${receiver?.name}`,
+      tokenName: `${tokenBalance?.symbol}`,
+    });
   };
 
   const closeModal = () => {
@@ -287,6 +224,7 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
                             onChange(token.value);
                           }}
                           key={resetKey}
+                          className="bg-white border border-medium/60 rounded-md"
                         />
                       )}
                       name={"token"}
@@ -302,7 +240,7 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
                 <div className="flex flex-col md:flex-row gap-3 md:gap-6">
                   <div className="flex-1">
                     <TabsRoot>
-                      <TabsList className="border-b border-light">
+                      <TabsList className="border-b border-medium/60">
                         <TabsHeader
                           isActiveBg={false}
                           isActiveText={true}
@@ -334,11 +272,11 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
                               <Controller
                                 control={control}
                                 render={({ field: { onChange, value } }) => (
-                                  <div className="flex items-center relative bg-light">
+                                  <div className="flex items-center relative bg-white overflow-hidden border border-medium/60 rounded-md">
                                     <Input
                                       type={"search"}
                                       isOutline={false}
-                                      className="bg-light text-sm"
+                                      className="bg-white text-sm"
                                       placeholder="0x719c1A5dac69C4C6b462Aa7E8Fb9bc90Ec9128b9"
                                       onChange={onChange}
                                       value={value ? value : ""}
@@ -382,7 +320,7 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
                               <Controller
                                 control={control}
                                 render={({ field: { onChange, value } }) => (
-                                  <div className="flex items-center relative bg-light">
+                                  <div className="flex items-center relative bg-white border border-medium/60 rounded-md">
                                     <div
                                       role="button"
                                       onClick={onPaste}
@@ -396,8 +334,8 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
                                     <Input
                                       type={"search"}
                                       isOutline={false}
-                                      className="bg-light text-sm"
-                                      placeholder="dexa"
+                                      className="bg-white text-sm"
+                                      placeholder="Dexa username"
                                       onChange={(e) => {
                                         onChange(e);
                                         search(e.target.value);
@@ -461,10 +399,10 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
                         <Controller
                           control={control}
                           render={({ field: { onChange, value } }) => (
-                            <div className="flex items-center relative bg-light">
+                            <div className="flex items-center relative overflow-hidden bg-white border border-medium/60 rounded-md">
                               <Input
                                 isOutline={false}
-                                className="bg-light text-sm"
+                                className="bg-white text-sm"
                                 placeholder="Min amount: 0.01"
                                 onChange={(e) => {
                                   onChange(e);
@@ -517,7 +455,7 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
                             <>
                               <Label title="Remark" isMargin={true} />
                               <Input
-                                className="bg-light text-sm"
+                                className="bg-white border border-medium/60 rounded-md text-sm"
                                 placeholder="Remarks"
                                 value={value}
                                 onChange={onChange}

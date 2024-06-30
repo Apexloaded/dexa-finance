@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  Fragment,
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { Fragment, useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   Transition,
@@ -16,47 +10,25 @@ import {
 } from "@headlessui/react";
 import Label from "../Form/Label";
 import Input from "../Form/Input";
-import TabsRoot from "../Tabs/TabsRoot";
-import TabsList from "../Tabs/TabsList";
-import TabsHeader from "../Tabs/TabsHeader";
-import TabsContent from "../Tabs/TabsContent";
 import Button from "../Form/Button";
-import { ClipboardPenLineIcon, InfoIcon, User2Icon, XIcon } from "lucide-react";
+import { ClipboardPenLineIcon, InfoIcon, XIcon } from "lucide-react";
 import Select, { Options } from "../Form/Select";
 import { Tokens } from "@/libs/tokens";
 import { useForm, Controller, FieldValues } from "react-hook-form";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { useWriteContracts, useCapabilities } from "wagmi/experimental";
 import { useDexa } from "@/context/dexa.context";
-import { UserBalance, UserInterface } from "@/interfaces/user.interface";
-import {
-  formatWalletAddress,
-  isLikelyUsername,
-  toOxString,
-  walletToLowercase,
-  weiToUnit,
-} from "@/libs/helpers";
+import { UserBalance } from "@/interfaces/user.interface";
+import { walletToLowercase, weiToUnit } from "@/libs/helpers";
 import ShowError from "../Form/ShowError";
 import useClipBoard from "@/hooks/clipboard.hook";
 import useToast from "@/hooks/toast.hook";
-import ethers, {
-  parseEther,
-  isAddress,
-  hexlify,
-  toUtf8Bytes,
-  encodeBytes32String,
-  toUtf8String,
-  getBytes,
-  toQuantity,
-} from "ethers";
-import debounce from "debounce";
-import { addBeneficiary } from "@/actions/beneficiary.action";
-import { queryClient } from "../RootProviders";
+import { parseEther, hexlify, toUtf8Bytes } from "ethers";
 import TextArea from "../Form/TextArea";
 import { sendPayWithEmail } from "@/actions/request.action";
 import { useAuth } from "@/context/auth.context";
-import { stringToBytes, stringToHex } from "viem";
-import { baseSepolia } from "viem/chains";
+import { isWalletACoinbaseSmartWallet } from "@coinbase/onchainkit/wallet";
+import useDexaCapabilities from "@/hooks/capabilities.hook";
 
 type Props = {
   isOpen: boolean;
@@ -65,53 +37,31 @@ type Props = {
 
 function SendPaymentModal({ isOpen, setIsOpen }: Props) {
   const {
-    resetField,
     trigger,
     watch,
     control,
     setValue,
     reset,
     handleSubmit,
-    clearErrors,
     formState: { errors, isSubmitting },
-  } = useForm(); //{ ...withdrawalResolver }
-  const username = watch("username");
+  } = useForm();
   const { address, chainId } = useAccount();
-  const [activeTab, setActiveTab] = useState<string>("tab1");
-  const [receiver, setReceiver] = useState<UserInterface>();
   const { paste } = useClipBoard();
   const { error, loading, success } = useToast();
-  const { user } = useAuth();
+  const { user, isSmartWallet } = useAuth();
   const [amount, setAmount] = useState<string>("0.00");
   const [resetKey, setResetKey] = useState<number>(0);
   const [selectedToken, setSelectedToken] = useState<Options>();
   const [tokenBalance, setTokenBalance] = useState<UserBalance>();
   const { dexaPayAddr, DexaPayAbi } = useDexa();
-  const { writeContractAsync, isPending } = useWriteContract();
-  const { data: callID, writeContracts } = useWriteContracts();
+  const capabilities = useDexaCapabilities({ address, chainId, isSmartWallet });
+  const { data: callID, writeContractsAsync, isPending } = useWriteContracts();
+  const { writeContractAsync } = useWriteContract();
   const [options] = useState(
     Tokens.map((t) => {
       return { value: t.address, name: t.symbol, icon: t.icon };
     })
   );
-  const { data: availableCapabilities } = useCapabilities({
-    account: address,
-  });
-  const capabilities = useMemo(() => {
-    if (!availableCapabilities || !chainId) return {};
-    const capabilitiesForChain = availableCapabilities[chainId];
-    if (
-      capabilitiesForChain["paymasterService"] &&
-      capabilitiesForChain["paymasterService"].supported
-    ) {
-      return {
-        paymasterService: {
-          url: `${document.location.origin}/api/paymaster`,
-        },
-      };
-    }
-    return {};
-  }, [availableCapabilities, chainId]);
 
   const { data } = useReadContract({
     abi: DexaPayAbi,
@@ -119,32 +69,6 @@ function SendPaymentModal({ isOpen, setIsOpen }: Props) {
     functionName: "getBalances",
     args: [`${address}`],
   });
-
-  const { refetch: findUserByUsername, isFetching: isFetchingUser } =
-    useReadContract({
-      abi: DexaPayAbi,
-      address: dexaPayAddr,
-      functionName: "getUserByName",
-      args: [username],
-      query: { enabled: false },
-    });
-
-  const search = useCallback(
-    debounce(async (query) => {
-      if (query) {
-        if (isLikelyUsername(query)) {
-          const userRes = await findUserByUsername();
-          setReceiver(userRes.data as UserInterface);
-          const isAvailable = !!userRes.data;
-          if (isAvailable) {
-            clearErrors("username");
-          }
-          return !!userRes;
-        }
-      }
-    }, 1000),
-    []
-  );
 
   useEffect(() => {
     const init = () => {
@@ -162,10 +86,6 @@ function SendPaymentModal({ isOpen, setIsOpen }: Props) {
     };
     init();
   }, [data, selectedToken]);
-
-  const onTabChange = (tabId: string) => {
-    setActiveTab(tabId);
-  };
 
   const setMax = () => {
     if (!tokenBalance) return;
@@ -199,38 +119,48 @@ function SendPaymentModal({ isOpen, setIsOpen }: Props) {
       });
       const payId = hexlify(toUtf8Bytes(paymentReq.data.paymentId));
       const email = hexlify(toUtf8Bytes(paymentReq.data.email));
-      writeContracts({
-        contracts: [
+      const contractProps: any = {
+        abi: DexaPayAbi,
+        address: dexaPayAddr,
+        functionName: "payByEmail",
+        args: [parseEther(`${amount}`), email, remark, token, payId],
+      };
+      if (isSmartWallet) {
+        await writeContractsAsync(
           {
-            abi: DexaPayAbi,
-            address: dexaPayAddr,
-            functionName: "payByEmail",
-            args: [parseEther(`${amount}`), email, remark, token, payId],
+            contracts: [{ ...contractProps }],
+            capabilities,
           },
-        ],
-        capabilities,
-        chainId: baseSepolia.id
-      });
-      //   await writeContractAsync(
-      //     {
-      //       abi: DexaPayAbi,
-      //       address: dexaPayAddr,
-      //       functionName: "payByEmail",
-      //       args: [parseEther(`${amount}`), email, remark, token, payId],
-      //     },
-      //     {
-      //       onSuccess: async (data) => {
-      //         success({
-      //           msg: `${amount} ${tokenBalance?.symbol} transferred succesfully`,
-      //         });
-      //         closeModal();
-      //         resetForm();
-      //       },
-      //       onError(err) {
-      //         error({ msg: `${err.message}` });
-      //       },
-      //     }
-      //   );
+          {
+            onSuccess: async (data) => {
+              success({
+                msg: `${amount} ${tokenBalance?.symbol} sent`,
+              });
+              closeModal();
+              resetForm();
+            },
+            onError(err) {
+              error({ msg: `${err.message}` });
+            },
+          }
+        );
+      } else {
+        await writeContractAsync(
+          { ...contractProps },
+          {
+            onSuccess: async (data) => {
+              success({
+                msg: `${amount} ${tokenBalance?.symbol} sent`,
+              });
+              closeModal();
+              resetForm();
+            },
+            onError(err) {
+              error({ msg: `${err.message}` });
+            },
+          }
+        );
+      }
     } catch (err) {
       console.log(err);
       if (err instanceof Error) {
@@ -287,7 +217,6 @@ function SendPaymentModal({ isOpen, setIsOpen }: Props) {
                 as="h3"
                 className="text-lg px-4 py-2 flex top-0 sticky z-20 bg-white border-b border-light justify-between items-center leading-6 m-0 text-dark/80"
               >
-                <div>{JSON.stringify(capabilities)}</div>
                 <div className="flex items-center gap-x-2">
                   <span className="font-bold">Send Payment</span>
                 </div>
@@ -322,6 +251,7 @@ function SendPaymentModal({ isOpen, setIsOpen }: Props) {
                             onChange(token.value);
                           }}
                           key={resetKey}
+                          className="bg-white border border-medium/60 rounded-md"
                         />
                       )}
                       name={"token"}
@@ -342,11 +272,11 @@ function SendPaymentModal({ isOpen, setIsOpen }: Props) {
                     <Controller
                       control={control}
                       render={({ field: { onChange, value } }) => (
-                        <div className="flex items-center relative bg-light">
+                        <div className="flex items-center relative bg-white border border-medium/60 rounded-md overflow-hidden">
                           <Input
                             type={"email"}
                             isOutline={false}
-                            className="bg-light text-sm"
+                            className="bg-white text-sm"
                             placeholder="email@example.com"
                             onChange={onChange}
                             value={value ? value : ""}
@@ -375,10 +305,10 @@ function SendPaymentModal({ isOpen, setIsOpen }: Props) {
                     <Controller
                       control={control}
                       render={({ field: { onChange, value } }) => (
-                        <div className="flex items-center relative bg-light">
+                        <div className="flex items-center relative bg-white border border-medium/60 rounded-md overflow-hidden">
                           <Input
                             isOutline={false}
-                            className="bg-light text-sm"
+                            className="bg-white text-sm"
                             placeholder="Min amount: 0.01"
                             onChange={(e) => {
                               onChange(e);
@@ -431,7 +361,7 @@ function SendPaymentModal({ isOpen, setIsOpen }: Props) {
                         <>
                           <Label title="Message" isMargin={true} />
                           <TextArea
-                            className="bg-light py-2 text-sm"
+                            className="bg-white border border-medium/60 rounded-md py-2 text-sm"
                             placeholder="Send a message along with the payment."
                             value={value}
                             onChange={onChange}

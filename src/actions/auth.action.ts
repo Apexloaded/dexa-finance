@@ -16,7 +16,7 @@ import { isAddress } from "ethers";
 import { cookies } from "next/headers";
 import { SiweMessage, generateNonce } from "siwe";
 import { Chain, Hex } from "viem";
-import { postApi } from "./api.action";
+import { getApi, postApi } from "./api.action";
 import { revalidatePath } from "next/cache";
 import { RedirectType, redirect } from "next/navigation";
 
@@ -72,17 +72,32 @@ export async function verifyCaptcha(token: string): Promise<IActionResponse> {
 export async function getNonce(
   wallet: `0x${string}`
 ): Promise<IActionResponse> {
-  await dbConnect();
-  const isEthAddr = isAddress(wallet);
-  if (!isEthAddr) {
-    return { status: false, message: `Invalid wallet address` };
-  }
-
-  const auth = await Auth.findOne<IAuth>({ wallet: walletToLowercase(wallet) });
-  if (!auth) {
+  try {
+    await dbConnect();
+    const isEthAddr = isAddress(wallet);
+    if (!isEthAddr) {
+      return { status: false, message: `Invalid wallet address` };
+    }
+    const response = await getApi(`auth/nonce/generate?wallet=${wallet}`);
+    console.log(response);
+    
+    if (response.status == 200) {
+      return {
+        status: true,
+        message: "success",
+        data: { nonce: response.data.data.nonce },
+      };
+    }
+    return { status: false, message: `Account is not registered.` };
+    // const auth = await Auth.findOne<IAuth>({ wallet: walletToLowercase(wallet) });
+    // if (!auth) {
+    //   return { status: false, message: `Account is not registered.` };
+    // }
+    // return { status: true, message: "success", data: { nonce: auth.nonce } };
+  } catch (error: any) {
+    console.log(error.message)
     return { status: false, message: `Account is not registered.` };
   }
-  return { status: true, message: "success", data: { nonce: auth.nonce } };
 }
 
 export async function verifyNonce({
@@ -91,44 +106,48 @@ export async function verifyNonce({
   wallet,
   chainId,
 }: IVerifyNonce): Promise<IActionResponse> {
-  await dbConnect();
-  const siwe = new SiweMessage(message);
-  const userWallet = walletToLowercase(wallet);
-  const [userAuth] = await Promise.all([
-    Auth.findOne<IAuth>({ wallet: userWallet }),
-  ]);
-  if (!userAuth || userAuth.wallet == undefined) {
-    return { status: false, message: `Unauthorized access` };
+  try {
+    await dbConnect();
+    const siwe = new SiweMessage(message);
+    const userWallet = walletToLowercase(wallet);
+    const [userAuth] = await Promise.all([
+      Auth.findOne<IAuth>({ wallet: userWallet }),
+    ]);
+    if (!userAuth || userAuth.wallet == undefined) {
+      return { status: false, message: `Unauthorized access` };
+    }
+
+    if (siwe.nonce !== userAuth.nonce) {
+      return { status: false, message: `Incorrect nonce` };
+    }
+
+    const chain = getChainById(chainId);
+    const provider = getRpcProviderForChain(chain as Chain);
+    const isValid = await provider.verifySiweMessage({
+      address: wallet,
+      message: message,
+      signature,
+    });
+
+    if (!isValid) {
+      return { status: false, message: `Invalid signature` };
+    }
+
+    const session = await encryptSession({ ...siwe });
+    cookies().set(Sessions.ACCESS_TOKEN, session, {
+      httpOnly: false,
+      path: "/",
+      sameSite: "strict",
+      secure: false,
+      maxAge: 6 * 24 * 60 * 60,
+    });
+
+    const nonce = generateNonce();
+    await Auth.updateOne({ wallet: userWallet }, { nonce });
+    return { status: true };
+  } catch (error) {
+    return {status: false}
   }
-
-  if (siwe.nonce !== userAuth.nonce) {
-    return { status: false, message: `Incorrect nonce` };
-  }
-
-  const chain = getChainById(chainId);
-  const provider = getRpcProviderForChain(chain as Chain);
-  const isValid = await provider.verifySiweMessage({
-    address: wallet,
-    message: message,
-    signature,
-  });
-
-  if (!isValid) {
-    return { status: false, message: `Invalid signature` };
-  }
-
-  const session = await encryptSession({ ...siwe });
-  cookies().set(Sessions.ACCESS_TOKEN, session, {
-    httpOnly: false,
-    path: "/",
-    sameSite: "strict",
-    secure: false,
-    maxAge: 6 * 24 * 60 * 60,
-  });
-
-  const nonce = generateNonce();
-  await Auth.updateOne({ wallet: userWallet }, { nonce });
-  return { status: true };
 }
 
 export async function verifyNonceAuth({

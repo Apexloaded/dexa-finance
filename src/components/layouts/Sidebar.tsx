@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import NextImage from "../NextImage/NextImage";
+import Image from "next/image";
+import { favicon } from "@/components/Icons/Connector";
 import * as Popover from "@radix-ui/react-popover";
 import { getFirstLetters } from "@/libs/helpers";
 import {
@@ -30,20 +31,20 @@ export default function Sidebar() {
   const navigation = [
     { name: "Home", href: routes.app.home, icon: HomeIcon },
     {
-      name: "Bills",
-      href: routes.app.bills.index,
-      icon: HandCoinsIcon,
-    },
-    {
-      name: "Payments",
+      name: "ePay",
       href: routes.app.payments.index,
       icon: Wallet2Icon,
     },
     {
-      name: "Savings",
-      href: routes.app.savings.index,
-      icon: LandmarkIcon,
+      name: "Bills",
+      href: routes.app.bills.index,
+      icon: HandCoinsIcon,
     },
+    // {
+    //   name: "Savings",
+    //   href: routes.app.savings.index,
+    //   icon: LandmarkIcon,
+    // },
     // {
     //   name: "Transactions",
     //   href: routes.app.wallet.index,
@@ -78,8 +79,17 @@ export default function Sidebar() {
       className={`w-20 xl:w-56 border-r border-light py-5 hidden xs:flex flex-col justify-between`}
     >
       <div className="flex-1">
-        <div className="px-5">
-          <p>Header</p>
+        <div className="px-5 flex items-center gap-x-2 mb-5">
+          <Image
+            src={favicon.main}
+            width={260}
+            height={260}
+            alt={`dexa`}
+            className="h-10 w-10"
+          />
+          <p className="text-primary hidden xl:inline text-2xl font-black">
+            Dexapay
+          </p>
         </div>
         <div>
           {navigation.map((nav, key) => (

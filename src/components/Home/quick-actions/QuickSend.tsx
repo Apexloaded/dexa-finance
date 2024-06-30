@@ -60,7 +60,7 @@ function QuickSend() {
               setQuery(e.target.value);
             }}
             placeholder="Amount"
-            className="flex-1 rounded-md text-base placeholder:text-primary/40"
+            className="flex-1 rounded-md text-base border border-primary placeholder:text-primary/40"
           />
           <Button
             kind="clear"

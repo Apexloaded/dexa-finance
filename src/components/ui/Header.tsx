@@ -12,7 +12,7 @@ function Header({ title, isBack = true, children }: Props) {
     <div className="bg-white xl:bg-white/95 sticky z-50 top-0">
       <div className="flex items-center justify-start space-x-2">
         {isBack && <BackButton />}
-        <p className="text-xl font-semibold">{title}</p>
+        <p className="text-lg font-normal">{title}</p>
       </div>
     </div>
   );

@@ -35,15 +35,15 @@ export async function POST(r: Request) {
     return NextResponse.json({ error: "invalid wallet" }, { status: 400 });
   }
 
-  const user = await Auth.findOne<IAuth>({ wallet: userWallet });
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized access" }, { status: 400 });
-  }
+  // const user = await Auth.findOne<IAuth>({ wallet: userWallet });
+  // if (!user) {
+  //   return NextResponse.json({ error: "Unauthorized access" }, { status: 400 });
+  // }
 
-  const remainingFreeTransactions = Math.max(0, 5 - user.txCount);
-  if (remainingFreeTransactions < 1) {
-    return NextResponse.json({ error: "No free transaction" }, { status: 400 });
-  }
+  // const remainingFreeTransactions = Math.max(0, 5 - user.txCount);
+  // if (remainingFreeTransactions < 1) {
+  //   return NextResponse.json({ error: "No free transaction" }, { status: 400 });
+  // }
 
   if (method === "pm_getPaymasterStubData") {
     const result = await paymasterClient.getPaymasterStubData({

@@ -13,7 +13,7 @@ import AssetsTable from "@/components/Wallet/AssetsTable";
 import { useConverter } from "@/context/currency.context";
 import { useDexa } from "@/context/dexa.context";
 import { useAuth } from "@/context/auth.context";
-import { useReadContract } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { formatCur, walletToLowercase, weiToUnit } from "@/libs/helpers";
 import { UserBalance } from "@/interfaces/user.interface";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux.hook";
@@ -36,6 +36,7 @@ import { fetchTxCount } from "@/actions/transaction.action";
 function WalletTab() {
   const isHidden = useAppSelector(selectHideBalance);
   const dispatch = useAppDispatch();
+  const { address } = useAccount();
   const [isNotify, setIsNotify] = useState<boolean>(false);
   const [balances, setBalances] = useState<UserBalance[]>([]);
   const [totalValue, setTotalValue] = useState<UserBalance>();
@@ -47,7 +48,7 @@ function WalletTab() {
   const { setItem } = useStorage();
   const { usdRate, ethRate } = useConverter();
   const { dexaPayAddr, DexaPayAbi } = useDexa();
-  const { user } = useAuth();
+  const { user, isSmartWallet } = useAuth();
   const { data: txCountResponse } = useQuery({
     queryFn: () => fetchTxCount(),
     queryKey: ["tx-count"],
@@ -121,7 +122,7 @@ function WalletTab() {
   return (
     <>
       <div className="flex h-full flex-1 flex-col overflow-scroll scrollbar-hide">
-        {isNotify && txCount > 0 && (
+        {isNotify && txCount > 0 && isSmartWallet && (
           <div className="bg-primary/30 px-5 w-full sticky top-0">
             <div className="py-2 flex items-center justify-between w-full">
               <div className="flex items-center gap-x-1">
@@ -192,27 +193,28 @@ function WalletTab() {
                 type="button"
                 kind="primary"
                 shape="NORMAL"
+                className="border border-primary"
                 onClick={() => setIsDepositModal(true)}
               >
-                Deposit
+                <p className="text-sm text-white">Deposit</p>
               </Button>
               <Button
                 type="button"
                 kind="clear"
                 shape="NORMAL"
-                className="bg-light hover:bg-medium/20"
+                className="bg-light hover:bg-medium/20 border border-light"
                 onClick={() => setIsWithdrawModal(true)}
               >
-                Withdraw
+                <p className="text-sm">Withdraw</p>
               </Button>
               <Button
                 type="button"
                 kind="clear"
                 shape="NORMAL"
-                className="bg-light hover:bg-medium/20"
+                className="bg-light hover:bg-medium/20 border border-light"
                 onClick={() => setIsTransferModal(true)}
               >
-                Pay
+                <p className="text-sm">Pay</p>
               </Button>
             </div>
             <div className="flex items-center gap-x-5 pt-5 max-w-xl">

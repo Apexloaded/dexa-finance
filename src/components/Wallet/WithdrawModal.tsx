@@ -15,22 +15,18 @@ import { ClipboardPenLineIcon, XIcon } from "lucide-react";
 import Select, { Options } from "../Form/Select";
 import { Tokens } from "@/libs/tokens";
 import { useForm, Controller, FieldValues } from "react-hook-form";
-import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { useDexa } from "@/context/dexa.context";
 import { UserBalance } from "@/interfaces/user.interface";
 import {
   formatWalletAddress,
-  toOxString,
   walletToLowercase,
   weiToUnit,
 } from "@/libs/helpers";
 import { withdrawalResolver } from "@/schemas/withdraw.schema";
 import ShowError from "../Form/ShowError";
-import useToast from "@/hooks/toast.hook";
-import { parseEther } from "ethers";
-import { useAuth } from "@/context/auth.context";
 import useClipBoard from "@/hooks/clipboard.hook";
-import { useWriteContracts, useCapabilities } from "wagmi/experimental";
+import useWithdraw from "@/hooks/transactions/withdraw.hook";
 
 type Props = {
   isOpen: boolean;
@@ -48,39 +44,18 @@ function WithdrawModal({ isOpen, setIsOpen }: Props) {
   } = useForm({ ...withdrawalResolver });
   const { address, chainId } = useAccount();
   const { paste } = useClipBoard();
-  const { error, loading, success } = useToast();
   const [amount, setAmount] = useState<string>("0.00");
   const [resetKey, setResetKey] = useState<number>(0);
   const [receiver, setReceiver] = useState<string>();
   const [selectedToken, setSelectedToken] = useState<Options>();
   const [tokenBalance, setTokenBalance] = useState<UserBalance>();
   const { dexaPayAddr, DexaPayAbi } = useDexa();
-  const { user } = useAuth();
-  const { writeContractsAsync, isPending } = useWriteContracts();
+  const { isPending, onSubmit: initSubmit } = useWithdraw();
   const [options] = useState(
     Tokens.map((t) => {
       return { value: t.address, name: t.symbol, icon: t.icon };
     })
   );
-
-  const { data: availableCapabilities } = useCapabilities({
-    account: address,
-  });
-  const capabilities = useMemo(() => {
-    if (!availableCapabilities || !chainId) return {};
-    const capabilitiesForChain = availableCapabilities[chainId];
-    if (
-      capabilitiesForChain["paymasterService"] &&
-      capabilitiesForChain["paymasterService"].supported
-    ) {
-      return {
-        paymasterService: {
-          url: `${document.location.origin}/api/paymaster`,
-        },
-      };
-    }
-    return {};
-  }, [availableCapabilities]);
 
   const { data } = useReadContract({
     abi: DexaPayAbi,
@@ -115,45 +90,15 @@ function WithdrawModal({ isOpen, setIsOpen }: Props) {
   };
 
   const onSubmit = async (payload: FieldValues) => {
-    try {
-      const { token, amount, to } = payload;
-      loading({
-        msg: "Initiating withdrawal",
-      });
-      await writeContractsAsync(
-        {
-          contracts: [
-            {
-              abi: DexaPayAbi,
-              address: dexaPayAddr,
-              functionName: "transferExternal",
-              args: [to, parseEther(`${amount}`), token, ""],
-            },
-          ],
-          capabilities,
-        },
-        {
-          onSuccess: async (data) => {
-            success({
-              msg: `${amount} ${tokenBalance?.symbol} withdrawn succesfully`,
-            });
-            closeModal();
-            resetForm();
-          },
-          onError(err) {
-            error({ msg: `${err.message}` });
-          },
-        }
-      );
-    } catch (err) {
-      console.log(err);
-      if (err instanceof Error) {
-        error({ msg: err.message });
-      }
-      if (err && typeof err === "object") {
-        error({ msg: JSON.stringify(err) });
-      }
-    }
+    const { token, amount, to } = payload;
+    await initSubmit({
+      token,
+      amount,
+      to,
+      closeModal,
+      resetForm,
+      tokenName: `${tokenBalance?.symbol}`,
+    });
   };
 
   const onPaste = async () => {
@@ -237,6 +182,7 @@ function WithdrawModal({ isOpen, setIsOpen }: Props) {
                             onChange(token.value);
                           }}
                           key={resetKey}
+                          className="bg-white border border-medium/60 rounded-md"
                         />
                       )}
                       name={"token"}
@@ -256,11 +202,11 @@ function WithdrawModal({ isOpen, setIsOpen }: Props) {
                     <Controller
                       control={control}
                       render={({ field: { onChange, value } }) => (
-                        <div className="flex items-center relative bg-light">
+                        <div className="flex items-center relative bg-white border border-medium/60 rounded-md overflow-hidden">
                           <Input
                             type={"text"}
                             isOutline={false}
-                            className="bg-light text-sm"
+                            className=" text-sm"
                             placeholder="0x719c1A5dac69C4C6b462Aa7E8Fb9bc90Ec9128b9"
                             onChange={(e) => {
                               onChange(e);
@@ -293,10 +239,10 @@ function WithdrawModal({ isOpen, setIsOpen }: Props) {
                         <Controller
                           control={control}
                           render={({ field: { onChange, value } }) => (
-                            <div className="flex items-center relative bg-light">
+                            <div className="flex items-center relative bg-white border border-medium/60 rounded-md overflow-hidden">
                               <Input
                                 isOutline={false}
-                                className="bg-light text-sm"
+                                className="bg-white text-sm"
                                 placeholder="Min amount: 0.01"
                                 onChange={(e) => {
                                   onChange(e);
