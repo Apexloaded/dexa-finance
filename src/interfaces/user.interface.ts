@@ -10,6 +10,7 @@ export interface UserInterface {
   updatedAt?: string;
   createdAt?: string;
   website?: string;
+  payId:string;
 }
 
 export interface FriendListInterface {

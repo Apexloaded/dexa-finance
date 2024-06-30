@@ -29,6 +29,9 @@ import { sendPayWithEmail } from "@/actions/request.action";
 import { useAuth } from "@/context/auth.context";
 import { isWalletACoinbaseSmartWallet } from "@coinbase/onchainkit/wallet";
 import useDexaCapabilities from "@/hooks/capabilities.hook";
+import useSocket from "@/hooks/socket.hook";
+import { SocketEvents } from "@/libs/enums";
+import { SendPaymentEvent } from "@/interfaces/pay-request.interface";
 
 type Props = {
   isOpen: boolean;
@@ -49,6 +52,7 @@ function SendPaymentModal({ isOpen, setIsOpen }: Props) {
   const { paste } = useClipBoard();
   const { error, loading, success } = useToast();
   const { user, isSmartWallet } = useAuth();
+  const { emit } = useSocket();
   const [amount, setAmount] = useState<string>("0.00");
   const [resetKey, setResetKey] = useState<number>(0);
   const [selectedToken, setSelectedToken] = useState<Options>();
@@ -133,6 +137,10 @@ function SendPaymentModal({ isOpen, setIsOpen }: Props) {
           },
           {
             onSuccess: async (data) => {
+              emit<SendPaymentEvent>(SocketEvents.PaymentSent, {
+                email,
+                paymentCode: payId,
+              });
               success({
                 msg: `${amount} ${tokenBalance?.symbol} sent`,
               });
@@ -149,6 +157,10 @@ function SendPaymentModal({ isOpen, setIsOpen }: Props) {
           { ...contractProps },
           {
             onSuccess: async (data) => {
+              emit<SendPaymentEvent>(SocketEvents.PaymentSent, {
+                email,
+                paymentCode: payId,
+              });
               success({
                 msg: `${amount} ${tokenBalance?.symbol} sent`,
               });

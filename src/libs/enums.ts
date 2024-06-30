@@ -28,3 +28,9 @@ export enum RequestStatus {
   Rejected = "1",
   Fulfilled = "2",
 }
+
+export enum SocketEvents {
+  PaymentRequested = "payment.requested",
+  PaymentSent = "payment.sent",
+  PaymentClaimed = "payment.claimed",
+}

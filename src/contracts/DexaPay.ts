@@ -678,11 +678,6 @@ const abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
-      {
         internalType: "bytes",
         name: "code",
         type: "bytes",
@@ -719,6 +714,92 @@ const abi = [
         internalType: "struct TokenBalance[]",
         name: "",
         type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes",
+        name: "code",
+        type: "bytes",
+      },
+    ],
+    name: "getRequest",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "sender",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "recipient",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "token",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "fee",
+            type: "uint256",
+          },
+          {
+            internalType: "bytes",
+            name: "email",
+            type: "bytes",
+          },
+          {
+            internalType: "string",
+            name: "remark",
+            type: "string",
+          },
+          {
+            internalType: "uint256",
+            name: "createdAt",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "expiresAt",
+            type: "uint256",
+          },
+          {
+            internalType: "enum RequestType",
+            name: "requestType",
+            type: "uint8",
+          },
+          {
+            internalType: "enum RequestStatus",
+            name: "status",
+            type: "uint8",
+          },
+          {
+            internalType: "bool",
+            name: "isRequesting",
+            type: "bool",
+          },
+          {
+            internalType: "bytes",
+            name: "paymentCode",
+            type: "bytes",
+          },
+        ],
+        internalType: "struct RequestPayment",
+        name: "",
+        type: "tuple",
       },
     ],
     stateMutability: "view",

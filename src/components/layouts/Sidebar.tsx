@@ -6,6 +6,7 @@ import { favicon } from "@/components/Icons/Connector";
 import * as Popover from "@radix-ui/react-popover";
 import { getFirstLetters } from "@/libs/helpers";
 import {
+  CheckCheck,
   CopyIcon,
   EllipsisIcon,
   HandCoinsIcon,
@@ -22,11 +23,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import UserPFP from "../ui/UserPFP";
+import useClipBoard from "@/hooks/clipboard.hook";
 
 export default function Sidebar() {
   const path = usePathname();
   const isXsScreen = useMediaQuery("(max-width: 500px)");
   const { user, logout } = useAuth();
+  const { copy, isCopied } = useClipBoard();
 
   const navigation = [
     { name: "Home", href: routes.app.home, icon: HomeIcon },
@@ -136,12 +139,22 @@ export default function Sidebar() {
                   </div>
                   <div className="hidden xl:flex flex-col items-start">
                     <p className="font-bold text-sm">{user?.name}</p>
-                    <div className="flex items-center gap-x-2 -mt-1">
+                    <div
+                      className="flex items-center gap-x-2 -mt-1"
+                      role="button"
+                      onClick={async () => {
+                        await copy(`${user?.payId}`);
+                      }}
+                    >
                       <div className="flex items-center gap-x-1">
                         <p className="text-sm text-medium">ID:</p>
-                        <p className="text-sm text-medium">69876566</p>
+                        <p className="text-sm text-medium">{user?.payId}</p>
                       </div>
-                      <CopyIcon size={15} />
+                      {isCopied ? (
+                        <CheckCheck size={16} className="text-primary" />
+                      ) : (
+                        <CopyIcon size={15} />
+                      )}
                     </div>
                   </div>
                 </div>

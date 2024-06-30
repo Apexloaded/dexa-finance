@@ -41,6 +41,9 @@ import { useAuth } from "@/context/auth.context";
 import { stringToBytes, stringToHex } from "viem";
 import { baseSepolia } from "viem/chains";
 import useDexaCapabilities from "@/hooks/capabilities.hook";
+import useSocket from "@/hooks/socket.hook";
+import { SocketEvents } from "@/libs/enums";
+import { RequestPaymentEvent } from "@/interfaces/pay-request.interface";
 
 type Props = {
   closeModal?: () => void;
@@ -58,6 +61,7 @@ function RequestPaymentForm({ closeModal }: Props) {
   const { address, chainId } = useAccount();
   const { paste } = useClipBoard();
   const { error, loading, success } = useToast();
+  const { emit } = useSocket();
   const { user, isSmartWallet } = useAuth();
   const [resetKey, setResetKey] = useState<number>(0);
   const [selectedToken, setSelectedToken] = useState<Options>();
@@ -83,13 +87,19 @@ function RequestPaymentForm({ closeModal }: Props) {
       loading({
         msg: "Requesting...",
       });
+      const paymentToken = Tokens.find(
+        (t) =>
+          walletToLowercase(t.address) ==
+          walletToLowercase(`${selectedToken?.value}`)
+      );
+      console.log(paymentToken);
       const paymentReq = await sendPayWithEmail({
         email: to,
         senderName: user?.name || "",
         tokenAddress: token,
-        tokenName: selectedToken?.name || "",
+        tokenName: paymentToken?.name || "",
         amount,
-        tokenSymbol: selectedToken?.symbol || "",
+        tokenSymbol: paymentToken?.symbol || "",
         from: `${address}`,
         isRequest: true,
       });
@@ -109,8 +119,14 @@ function RequestPaymentForm({ closeModal }: Props) {
         },
         {
           onSuccess: async (data) => {
+            emit<RequestPaymentEvent>(SocketEvents.PaymentRequested, {
+              sender: address,
+              email,
+              amount,
+              paymentCode: payId,
+            });
             success({
-              msg: `${amount} ${selectedToken?.symbol} requested`,
+              msg: `${amount} ${paymentToken?.symbol} requested`,
             });
             if (closeModal) closeModal();
             resetForm();
@@ -236,7 +252,7 @@ function RequestPaymentForm({ closeModal }: Props) {
           rules={{
             required: "Send a message along with your request",
             validate: (value: string) =>
-              value.length > 20 || "Enter a valid message",
+              value.length > 10 || "Enter a valid message",
           }}
           name={"remark"}
           defaultValue={""}

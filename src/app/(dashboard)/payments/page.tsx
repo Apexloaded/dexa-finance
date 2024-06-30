@@ -48,7 +48,7 @@ import Container from "@/components/layouts/Container";
 import Section from "@/components/layouts/Section";
 import Aside from "@/components/layouts/Aside";
 import SendPaymentModal from "@/components/Payments/SendPaymentModal";
-import { IPaymentRequest } from "@/interfaces/pay-request.interface";
+import { IPaymentRequest, sortRequestByDate } from "@/interfaces/pay-request.interface";
 import { Tokens } from "@/libs/tokens";
 import PaymentsTable from "@/components/Payments/PaymentsTable";
 import RequestPaymentModal from "@/components/Payments/RequestPaymentModal";
@@ -57,33 +57,10 @@ import UserPFP from "@/components/ui/UserPFP";
 import { useRouter } from "next/navigation";
 import { routes } from "@/libs/routes";
 
-const sortRequestByDate = (req: IPaymentRequest[]) => {
-  return req
-    .sort((a, b) => {
-      const dateA = timestampToDate(a.createdAt).getTime();
-      const dateB = timestampToDate(b.createdAt).getTime();
-      return dateB - dateA;
-    })
-    .map((p: IPaymentRequest) => mapReq(p));
-};
-
-const mapReq = (request: IPaymentRequest) => {
-  const { createdAt, amount, fee, ...payload } = request;
-  return {
-    createdAt: timestampToDate(request.createdAt).toISOString(),
-    amount: weiToUnit(request.amount).toString(),
-    fee: weiToUnit(request.fee),
-    ...payload,
-  } as IPaymentRequest;
-};
-
 function Wallet() {
   const router = useRouter();
   const isHidden = useAppSelector(selectHideBalance);
   const dispatch = useAppDispatch();
-  const { address } = useAccount();
-  const [balances, setBalances] = useState<UserBalance[]>([]);
-  const [totalValue, setTotalValue] = useState<UserBalance>();
   const [activeTab, setActiveTab] = useState("tab1");
   const [isSendModal, setSendModal] = useState<boolean>(false);
   const [isRequestModal, setRequestModal] = useState<boolean>(false);
@@ -120,7 +97,6 @@ function Wallet() {
         }
       );
       const requests = sortRequestByDate(reqWithToken);
-      console.log(requests);
       const incomingRequests = requests.filter(
         (req) => req.recipient == user?.wallet && req.isRequesting == true
       );
