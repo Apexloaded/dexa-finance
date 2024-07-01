@@ -4,6 +4,7 @@ import authReducer from "./slices/account/auth.slice";
 import hideBalanceReducer from "./slices/account/hide-balance.slice";
 import sidebarReducer from "./slices/sidebar/sidebar.slice";
 import savingsTabsReducer from "./slices/savings/active-tab.slice";
+import modalsReducer from "./slices/modals/modals.slice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     sidebar: sidebarReducer,
     "hide-balance": hideBalanceReducer,
     "savings-tabs": savingsTabsReducer,
+    "modals": modalsReducer
   },
 });
 

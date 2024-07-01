@@ -28,13 +28,10 @@ import { useDexa } from "@/context/dexa.context";
 import { depositResolver } from "@/schemas/deposit.schema";
 import useDeposit from "@/hooks/transactions/deposit.hook";
 import useToast from "@/hooks/toast.hook";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux.hook";
+import { selectDepositModal, setDepositModal } from "@/slices/modals/modals.slice";
 
-type Props = {
-  isOpen: boolean;
-  setIsOpen: (value: boolean) => void;
-};
-
-function DepositModal({ isOpen, setIsOpen }: Props) {
+function DepositModal() {
   const {
     trigger,
     control,
@@ -43,6 +40,8 @@ function DepositModal({ isOpen, setIsOpen }: Props) {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ ...depositResolver });
+  const isOpen = useAppSelector(selectDepositModal);
+  const dispatch = useAppDispatch();
   const { address } = useAccount();
   const [amount, setAmount] = useState<string>("0.00");
   const [resetKey, setResetKey] = useState<number>(0);
@@ -145,7 +144,7 @@ function DepositModal({ isOpen, setIsOpen }: Props) {
   };
 
   const closeModal = () => {
-    setIsOpen(false);
+    dispatch(setDepositModal(false));
     resetForm();
   };
 

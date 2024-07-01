@@ -27,13 +27,13 @@ import { withdrawalResolver } from "@/schemas/withdraw.schema";
 import ShowError from "../Form/ShowError";
 import useClipBoard from "@/hooks/clipboard.hook";
 import useWithdraw from "@/hooks/transactions/withdraw.hook";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux.hook";
+import {
+  selectWithdrawModal,
+  setWithdrawModal,
+} from "@/slices/modals/modals.slice";
 
-type Props = {
-  isOpen: boolean;
-  setIsOpen: (value: boolean) => void;
-};
-
-function WithdrawModal({ isOpen, setIsOpen }: Props) {
+function WithdrawModal() {
   const {
     trigger,
     control,
@@ -43,6 +43,8 @@ function WithdrawModal({ isOpen, setIsOpen }: Props) {
     formState: { errors, isSubmitting },
   } = useForm({ ...withdrawalResolver });
   const { address, chainId } = useAccount();
+  const isOpen = useAppSelector(selectWithdrawModal);
+  const dispatch = useAppDispatch();
   const { paste } = useClipBoard();
   const [amount, setAmount] = useState<string>("0.00");
   const [resetKey, setResetKey] = useState<number>(0);
@@ -109,7 +111,7 @@ function WithdrawModal({ isOpen, setIsOpen }: Props) {
   };
 
   const closeModal = () => {
-    setIsOpen(false);
+    dispatch(setWithdrawModal(false));
     resetForm();
   };
 

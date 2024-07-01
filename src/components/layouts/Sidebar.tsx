@@ -43,31 +43,6 @@ export default function Sidebar() {
       href: routes.app.bills.index,
       icon: HandCoinsIcon,
     },
-    // {
-    //   name: "Savings",
-    //   href: routes.app.savings.index,
-    //   icon: LandmarkIcon,
-    // },
-    // {
-    //   name: "Transactions",
-    //   href: routes.app.wallet.index,
-    //   icon: ReceiptIcon,
-    // },
-    // {
-    //   name: "Notifications",
-    //   href: "/notifications",
-    //   icon: BellDotIcon,
-    // },
-    // {
-    //   name: "Bookmarks",
-    //   href: routes.app.bookmarks,
-    //   icon: BookmarkIcon,
-    // },
-    // {
-    //   name: "Connections",
-    //   href: routes.app.connections,
-    //   icon: Users2Icon,
-    // },
     {
       name: "Settings",
       href: routes.app.settings,

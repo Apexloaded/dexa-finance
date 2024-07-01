@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { SetStateAction } from "react";
 import { CopyIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { formatCur, isNumber } from "@/libs/helpers";
 import Button from "../../Form/Button";
@@ -12,6 +12,7 @@ import {
 } from "@/slices/account/hide-balance.slice";
 import useStorage from "@/hooks/storage.hook";
 import { useAuth } from "@/context/auth.context";
+import { setDepositModal, setWithdrawModal } from "@/slices/modals/modals.slice";
 
 type Props = {
   showBtn?: boolean;
@@ -20,7 +21,7 @@ function BalanceCard({ showBtn }: Props) {
   const isHidden = useAppSelector(selectHideBalance);
   const dispatch = useAppDispatch();
   const { setItem } = useStorage();
-  const { totalValue } = useAuth();
+  const { totalValue, user } = useAuth();
 
   const toggleHide = () => {
     const value = !isHidden;
@@ -77,7 +78,7 @@ function BalanceCard({ showBtn }: Props) {
                   <div className="flex items-center gap-x-2">
                     <div className="flex items-center gap-x-1">
                       <p className="text-sm">Pay ID:</p>
-                      <p className="text-sm">69876566</p>
+                      <p className="text-sm">{user?.payId}</p>
                     </div>
                     <CopyIcon size={15} />
                   </div>
@@ -89,15 +90,15 @@ function BalanceCard({ showBtn }: Props) {
         {showBtn && (
           <div className="flex shrink-0 lg:flex-row flex-col gap-2 mb-2 mt-3 lg:gap-5 justify-center">
             <Button
-              //onClick={() => router.push(routes.app.wallet.index)}
+              onClick={() => dispatch(setDepositModal(true))}
               kind="default"
               shape={"ROUNDED"}
               className="border w-full border-white"
             >
-              <p className="text-sm xl:text-base">My Wallet</p>
+              <p className="text-sm xl:text-base">Deposit</p>
             </Button>
             <Button
-              //onClick={() => setIsWithdrawModal(true)}
+              onClick={() => dispatch(setWithdrawModal(true))}
               shape={"ROUNDED"}
               kind="primary"
               className="border w-full bg-transparent border-white"

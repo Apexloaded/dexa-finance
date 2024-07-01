@@ -1,23 +1,20 @@
 "use client";
 import React, { useEffect } from "react";
 import Button from "../Form/Button";
-import { BellIcon, BoxIcon, HomeIcon, MailIcon } from "lucide-react";
+import { HandCoinsIcon, HomeIcon, SettingsIcon, Wallet2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth.context";
-//import CreatorPFP from "../Posts/ListPost/CreatorPFP";
 import { routes } from "@/libs/routes";
 
 function MobileMenu() {
   const router = useRouter();
-  // const { setIsMsgBoxOn, isMsgBoxOn } = useDexaMessenger();
   const { user } = useAuth();
 
   useEffect(() => {
-    router.prefetch(routes.app.messages.index);
+    router.prefetch(routes.app.payments.index);
     router.prefetch(routes.app.home);
-    router.prefetch("/messages");
-    router.prefetch("/messages");
-    router.prefetch("/messages");
+    router.prefetch(routes.app.bills.index);
+    router.prefetch(routes.app.settings);
   }, []);
 
   const navigateTo = (url: string) => {
@@ -41,7 +38,7 @@ function MobileMenu() {
         </Button>
         <Button
           onClick={() => {
-            navigateTo(routes.app.messages.index);
+            navigateTo(routes.app.payments.index);
           }}
           type={"button"}
           kind={"default"}
@@ -49,31 +46,32 @@ function MobileMenu() {
           className="bg-transparent"
           hoverColor={false}
         >
-          <MailIcon height={23} />
+          <Wallet2Icon height={23} />
         </Button>
         <Button
+          onClick={() => {
+            navigateTo(routes.app.bills.index);
+          }}
           type={"button"}
           kind={"default"}
           shape={"CIRCLE"}
           className="bg-transparent"
           hoverColor={false}
         >
-          <BoxIcon height={23} />
+          <HandCoinsIcon height={23} />
         </Button>
         <Button
+          onClick={() => {
+            navigateTo(routes.app.settings);
+          }}
           type={"button"}
           kind={"default"}
           shape={"CIRCLE"}
           className="bg-transparent"
           hoverColor={false}
         >
-          <BellIcon height={23} />
+          <SettingsIcon height={23} />
         </Button>
-        {/* <CreatorPFP
-          username={user?.username}
-          name={user?.name}
-          pfp={user?.pfp}
-        /> */}
       </div>
     </div>
   );

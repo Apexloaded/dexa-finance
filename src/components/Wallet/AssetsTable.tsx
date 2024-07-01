@@ -4,21 +4,18 @@ import React from "react";
 import { formatCur, weiToUnit } from "@/libs/helpers";
 import { UserBalance } from "@/interfaces/user.interface";
 import EmptyBox from "../ui/EmptyBox";
-import { useAppSelector } from "@/hooks/redux.hook";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux.hook";
 import { selectHideBalance } from "@/slices/account/hide-balance.slice";
+import { setWithdrawModal } from "@/slices/modals/modals.slice";
 
 type Props = {
   balances: UserBalance[];
   setTransferModal: React.Dispatch<React.SetStateAction<boolean>>;
-  setWithdrawalModal: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-function AssetsTable({
-  balances,
-  setTransferModal,
-  setWithdrawalModal,
-}: Props) {
+function AssetsTable({ balances, setTransferModal }: Props) {
   const isHidden = useAppSelector(selectHideBalance);
+  const dispatch = useAppDispatch();
 
   return (
     <div className="flex-1 max-w-full border border-light overflow-auto">
@@ -95,7 +92,7 @@ function AssetsTable({
                   <td className="px-4">
                     <div className="flex gap-x-1 items-center">
                       <p
-                        onClick={() => setWithdrawalModal(true)}
+                        onClick={() => dispatch(setWithdrawModal(true))}
                         role="button"
                         className="text-sm font-bold text-primary p-2"
                       >
@@ -119,7 +116,6 @@ function AssetsTable({
                 <EmptyBox
                   title="No Assets"
                   message="You currently do not have any asset"
-
                 />
               </td>
             </tr>

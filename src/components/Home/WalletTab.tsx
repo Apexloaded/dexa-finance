@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, SetStateAction } from "react";
 import Button from "@/components/Form/Button";
 import Radio from "@/components/Form/Radio";
 import WalletSearch from "@/components/Wallet/WalletSearch";
@@ -26,12 +26,13 @@ import { StorageTypes } from "@/libs/enums";
 import ListTransactions from "@/components/Wallet/ListTransactions";
 import QuickAction from "@/components/Home/quick-actions/QuickAction";
 import TransferModal from "@/components/Wallet/TransferModal";
-import WithdrawModal from "@/components/Wallet/WithdrawModal";
+
 import { CircleCheck, XIcon } from "lucide-react";
 import { Tokens } from "@/libs/tokens";
-import DepositModal from "../Wallet/DepositModal";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTxCount } from "@/actions/transaction.action";
+import { setDepositModal, setWithdrawModal } from "@/slices/modals/modals.slice";
+
 
 function WalletTab() {
   const isHidden = useAppSelector(selectHideBalance);
@@ -42,8 +43,6 @@ function WalletTab() {
   const [totalValue, setTotalValue] = useState<UserBalance>();
   const [activeTab, setActiveTab] = useState("tab1");
   const [isTransferModal, setIsTransferModal] = useState<boolean>(false);
-  const [isWithdrawModal, setIsWithdrawModal] = useState<boolean>(false);
-  const [isDepositModal, setIsDepositModal] = useState<boolean>(false);
   const [txCount, setTxCount] = useState<number>(0);
   const { setItem } = useStorage();
   const { usdRate, ethRate } = useConverter();
@@ -194,7 +193,7 @@ function WalletTab() {
                 kind="primary"
                 shape="NORMAL"
                 className="border border-primary"
-                onClick={() => setIsDepositModal(true)}
+                onClick={() => dispatch(setDepositModal(true))}
               >
                 <p className="text-sm text-white">Deposit</p>
               </Button>
@@ -203,7 +202,7 @@ function WalletTab() {
                 kind="clear"
                 shape="NORMAL"
                 className="bg-light hover:bg-medium/20 border border-light"
-                onClick={() => setIsWithdrawModal(true)}
+                onClick={() => dispatch(setWithdrawModal(true))}
               >
                 <p className="text-sm">Withdraw</p>
               </Button>
@@ -255,7 +254,6 @@ function WalletTab() {
                     <AssetsTable
                       balances={balances}
                       setTransferModal={setIsTransferModal}
-                      setWithdrawalModal={setIsWithdrawModal}
                     />
                   </div>
                 </TabsContent>
@@ -270,9 +268,7 @@ function WalletTab() {
         </div>
       </div>
 
-      <DepositModal setIsOpen={setIsDepositModal} isOpen={isDepositModal} />
       <TransferModal setIsOpen={setIsTransferModal} isOpen={isTransferModal} />
-      <WithdrawModal setIsOpen={setIsWithdrawModal} isOpen={isWithdrawModal} />
     </>
   );
 }
