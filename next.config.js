@@ -14,6 +14,15 @@ const nextConfig = withPWA({
     serverComponentsExternalPackages: ["mongoose"],
     serverActions: true,
   },
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/login",
+        permanent: true,
+      },
+    ];
+  },
 });
 
-module.exports = nextConfig
+module.exports = nextConfig;

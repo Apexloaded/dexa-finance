@@ -28,7 +28,7 @@ const sortBillByDate = (req: Bills[]) => {
 export const mapBill = (bill: Bills) => {
   const { id, createdAt, amount, balance, realisedAmount, ...payload } = bill;
   return {
-    id: weiToUnit(id).toString(),
+    id: Number(id).toString(),
     createdAt: timestampToDate(bill.createdAt).toISOString(),
     amount: weiToUnit(bill.amount),
     balance: weiToUnit(bill.balance),
@@ -56,6 +56,7 @@ function ListBills() {
   useEffect(() => {
     if (data) {
       const sortedBills = sortBillByDate(data as Bills[]);
+      console.log(sortedBills);
       const active = sortedBills.filter((b) => b.status == BillStatus.Active);
       const complete = sortedBills.filter(
         (b) => b.status == BillStatus.Completed

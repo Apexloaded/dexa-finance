@@ -24,7 +24,7 @@ import {
 import { useDexa } from "@/context/dexa.context";
 import { Bills } from "@/interfaces/bills.interface";
 import { Tokens } from "@/libs/tokens";
-import { ZeroAddress, parseEther } from "ethers";
+import { ZeroAddress, parseEther, parseUnits } from "ethers";
 import { toOxString, weiToUnit } from "@/libs/helpers";
 
 type Props = {
@@ -72,8 +72,7 @@ function FundBillModal({ isOpen, setIsOpen, bill }: Props) {
 
   useEffect(() => {
     if (!amount) return;
-    const unit = weiToUnit(`${allowance}`);
-    const isAllowed = unit >= Number(amount);
+    const isAllowed = weiToUnit(`${allowance}`) >= Number(amount);
     setRequest(!isAllowed);
   }, [allowance, amount]);
 
@@ -90,13 +89,16 @@ function FundBillModal({ isOpen, setIsOpen, bill }: Props) {
             abi: ERC20ABI,
             address: toOxString(bill.billToken),
             functionName: "approve",
-            args: [dexaBillAddr, parseEther(`${amount}`)],
+            args: [dexaBillAddr, parseEther(amount)],
           },
           {
             onSuccess: async (data) => {
               success({ msg: "Permission granted" });
               setRequest(false);
               setRequestHash(data);
+            },
+            onError(error, variables, context) {
+              console.log(error);
             },
           }
         );
