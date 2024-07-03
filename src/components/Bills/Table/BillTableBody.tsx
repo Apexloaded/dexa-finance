@@ -129,11 +129,11 @@ function BillTableBody({ bill }: Props) {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-medium">Bill ID</p>
-                  <p className="text-dark font-bold">{bill.billId}</p>
+                  <p className="text-dark font-semibold">{bill.billId}</p>
                   <Link
                     href={bill.billUrl}
                     target="_blank"
-                    className="text-primary font-bold"
+                    className="text-primary font-semibold"
                   >
                     View in explorer
                   </Link>
@@ -150,7 +150,7 @@ function BillTableBody({ bill }: Props) {
               <div className="flex items-center justify-between mt-8">
                 <div>
                   <p className="text-medium">BID</p>
-                  <p className="text-dark font-bold">
+                  <p className="text-dark">
                     {bill.id}
                   </p>
                 </div>
@@ -171,7 +171,7 @@ function BillTableBody({ bill }: Props) {
 
                 <div>
                   <p className="text-medium">Participants</p>
-                  <p className="text-dark font-bold">
+                  <p className="text-dark">
                     {participantProps[bill.participantType].text}{" "}
                     {bill.participants.length}
                   </p>
@@ -179,7 +179,7 @@ function BillTableBody({ bill }: Props) {
 
                 <div>
                   <p className="text-medium">Recipient</p>
-                  <p className="text-dark font-bold">{bill.recipient}</p>
+                  <p className="text-dark">{bill.recipient}</p>
                 </div>
               </div>
               {/* <p className="capitalize font-semibold">{bill.title}</p>

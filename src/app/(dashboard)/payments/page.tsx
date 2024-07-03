@@ -48,7 +48,10 @@ import Container from "@/components/layouts/Container";
 import Section from "@/components/layouts/Section";
 import Aside from "@/components/layouts/Aside";
 import SendPaymentModal from "@/components/Payments/SendPaymentModal";
-import { IPaymentRequest, sortRequestByDate } from "@/interfaces/pay-request.interface";
+import {
+  IPaymentRequest,
+  sortRequestByDate,
+} from "@/interfaces/pay-request.interface";
 import { Tokens } from "@/libs/tokens";
 import PaymentsTable from "@/components/Payments/PaymentsTable";
 import RequestPaymentModal from "@/components/Payments/RequestPaymentModal";
@@ -84,6 +87,10 @@ function Wallet() {
   const onTabChange = (tabId: string) => {
     setActiveTab(tabId);
   };
+
+  useEffect(() => {
+    router.prefetch(routes.app.payments.create);
+  }, [router]);
 
   useEffect(() => {
     const init = async () => {
