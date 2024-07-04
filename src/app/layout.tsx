@@ -28,7 +28,7 @@ export default function RootLayout({
   // );
   return (
     <html lang="en" className="overflow-hidden">
-      <body className={barlow.className}>
+      <body className={`${barlow.className}`}>
         <RootProviders>{children}</RootProviders>
         <Toaster />
       </body>

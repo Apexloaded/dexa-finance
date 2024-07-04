@@ -21,7 +21,7 @@ export default function Register() {
             Create a free dexa pay account to start accepting payments
           </p>
         </div>
-        <div className="w-full border border-medium/30 rounded-xl p-5">
+        <div className="w-full border border-medium/30 bg-white rounded-xl p-5">
           <RegisterUser />
         </div>
       </div>

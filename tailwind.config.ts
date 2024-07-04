@@ -17,6 +17,8 @@ const config: Config = {
     },
     extend: {
       backgroundImage: {
+        "welcome-gradient":
+          "linear-gradient(135deg, #D9D7F5 60%, #E4E3FA 80%, #B4B2E3 100%)",
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
