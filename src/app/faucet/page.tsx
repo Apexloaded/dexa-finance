@@ -91,11 +91,11 @@ export default function Faucet() {
                 className="w-full h-12"
                 disabled={isSubmitting || isLoading || !isDirty || !isValid}
               >
-                Send 1 BNB
+                Send 10 BNB
               </Button>
             </div>
             <p className="text-center text-medium mt-4">
-              Obtain Base Sepolia ETH{" "}
+              Request Base Sepolia ETH{" "}
               <Link className="text-primary" href={"https://console.optimism.io/faucet"} target="_blank">
                 Here
               </Link>
