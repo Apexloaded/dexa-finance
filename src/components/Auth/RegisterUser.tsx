@@ -95,11 +95,11 @@ function RegisterUser() {
 
   const proceed = async (data: FieldValues) => {
     try {
-      const isVerified = await verifyCaptcha(`${token}`);
-      if (!isVerified) {
-        error({ msg: "Invalid reCAPTCHA" });
-        return;
-      }
+      // const isVerified = await verifyCaptcha(`${token}`);
+      // if (!isVerified) {
+      //   error({ msg: "Invalid reCAPTCHA" });
+      //   return;
+      // }
 
       if (!isConnected) {
         setConnectModal(true);
@@ -239,7 +239,7 @@ function RegisterUser() {
               Login
             </Link>
           </p>
-          <ReCaptcha onVerify={handelRecaptcha} />
+          {/* <ReCaptcha onVerify={handelRecaptcha} /> */}
         </div>
       </div>
     </>
