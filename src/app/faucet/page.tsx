@@ -12,6 +12,7 @@ import { isAddress } from "ethers";
 import ShowError from "@/components/Form/ShowError";
 import { requestFaucet } from "@/actions/faucet.action";
 import useToast from "@/hooks/toast.hook";
+import Link from "next/link";
 
 export default function Faucet() {
   const { error, success, loading } = useToast();
@@ -93,6 +94,12 @@ export default function Faucet() {
                 Send 1 BNB
               </Button>
             </div>
+            <p className="text-center text-medium mt-4">
+              Obtain Base Sepolia ETH{" "}
+              <Link className="text-primary" href={"https://console.optimism.io/faucet"} target="_blank">
+                Here
+              </Link>
+            </p>
           </div>
         </div>
       </Section>
