@@ -27,7 +27,7 @@ export default function Login() {
     <div className="px-5 bg-primary/5 h-svh">
       {isConnected && signModal && <SignInModal setModal={setSignModal} />}
       <div className="max-w-lg mx-auto">
-        <div className="flex justify-center pt-10">
+        <Link href="/" className="flex justify-center pt-10">
           <Image
             src={favicon.main}
             width={260}
@@ -35,7 +35,7 @@ export default function Login() {
             alt={`dexa`}
             className="h-14 w-14"
           />
-        </div>
+        </Link>
         <div className="text-center py-4 mb-5">
           <p className="text-2xl font-semibold">Connect your wallet</p>
           <p className="text-medium">
