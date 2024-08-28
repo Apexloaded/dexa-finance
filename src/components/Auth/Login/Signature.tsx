@@ -153,7 +153,7 @@ function SignInModal({ setModal }: Props) {
                         className="text-primary fill-primary stroke-light"
                       />
                     </div>
-                    <p className="text-medium text-sm">https://dexapay.xyz</p>
+                    <p className="text-medium text-sm">https://dexafi.xyz</p>
                   </div>
                   <div className="border-t border-medium/40"></div>
                   <p className="">

@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { routes } from "@/libs/routes";
 import Link from "next/link";
-import ReCaptcha from "./ReCaptcha";
 import Button from "../Form/Button";
 import ShowError from "../Form/ShowError";
 import { CheckCheckIcon, CircleAlertIcon } from "lucide-react";
@@ -11,26 +10,17 @@ import Input from "../Form/Input";
 import Label from "../Form/Label";
 import { Controller, FieldValues, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import {
-  useAccount,
-  useAccountEffect,
-  useReadContract,
-  useWriteContract,
-} from "wagmi";
+import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import debounce from "debounce";
 import useToast from "@/hooks/toast.hook";
 import { useDexa } from "@/context/dexa.context";
-import { registerUser, verifyCaptcha } from "@/actions/auth.action";
+import { registerUser } from "@/actions/auth.action";
 import { ContractError } from "@/libs/enums";
 import { registerResolver } from "@/schemas/register.schema";
 import WalletConnectModal from "./WalletConnectModal";
 import Radio from "../Form/Radio";
 import { useAppSelector } from "@/hooks/redux.hook";
-import {
-  selectConnector,
-  selectIsConnected,
-} from "@/slices/account/auth.slice";
-import useNameAvailability from "@/hooks/dexa-pay/useName.hook";
+import { selectConnector } from "@/slices/account/auth.slice";
 import { bscTestnet } from "viem/chains";
 import { generateToken, tokenNumeric } from "@/libs/generate-id";
 

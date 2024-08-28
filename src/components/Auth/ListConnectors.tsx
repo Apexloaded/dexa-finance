@@ -105,7 +105,7 @@ function ListConnectors({ setSignModal, onCloseModal }: Props) {
                 )}
                 <span className="ml-3 font-medium">{connector.name}</span>
               </div>
-              {connector.id === "coinbaseWalletSDK" && (
+              {connector.id === "io.metamask" && (
                 <span className="text-xs bg-primary text-white px-3 rounded-sm">
                   Smart
                 </span>

@@ -47,8 +47,6 @@ export default function Login() {
           <ListConnectors setSignModal={setSignModal} />
         </div>
 
-        <CreateSmartWallet />
-
         <div className="flex flex-row py-5 gap-x-2 justify-center items-center">
           <Link
             href={routes.register}

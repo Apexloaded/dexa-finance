@@ -8,7 +8,7 @@ import {
 import { useSwitchChain } from "wagmi";
 import Button from "../Form/Button";
 import { useAuth } from "@/context/auth.context";
-import { baseSepolia } from "viem/chains";
+import { bscTestnet } from "viem/chains";
 
 function SwitchChain() {
   const isSwitch = useAppSelector(selectSwitchChain);
@@ -17,7 +17,7 @@ function SwitchChain() {
   const { logout } = useAuth();
 
   const initSwitch = async () => {
-    await switchChainAsync({ chainId: baseSepolia.id });
+    await switchChainAsync({ chainId: bscTestnet.id });
   };
 
   const disconnect = () => {
@@ -68,7 +68,7 @@ function SwitchChain() {
               </DialogTitle>
               <div className="mt-2">
                 <p className="text-sm mb-2 text-dark/50 dark:text-gray-300">
-                  To continue using Dexa, you need to switch to Base Network. Click
+                  To continue using DexaFi, you need to switch to BSC Network. Click
                   the button below to switch
                 </p>
               </div>

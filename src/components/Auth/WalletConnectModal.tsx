@@ -34,7 +34,6 @@ function WalletConnectModal({ setModal }: Props) {
           <div className="flex flex-col w-full">
             <ListConnectors onCloseModal={setModal} />
           </div>
-          <CreateSmartWallet />
         </div>
       </div>
     </div>

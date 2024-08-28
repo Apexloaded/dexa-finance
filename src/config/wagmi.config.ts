@@ -1,7 +1,7 @@
 import { cookieStorage, createConfig, createStorage, http } from "wagmi";
 import { bsc, bscTestnet } from "wagmi/chains";
-import { coinbaseWallet } from "wagmi/connectors";
-import { RPC_URL_MAINNET, RPC_URL_TESTNET } from "./constants";
+import { metaMask, walletConnect } from "wagmi/connectors";
+import { PROJECT_ID, RPC_URL_MAINNET, RPC_URL_TESTNET } from "./constants";
 
 export function createWagmiConfig() {
   const bscUrl = RPC_URL_MAINNET;
@@ -11,15 +11,24 @@ export function createWagmiConfig() {
     chains: [bsc, bscTestnet],
     ssr: true,
     connectors: [
-      coinbaseWallet({
-        appName: "Dexa Finance",
-        preference: "smartWalletOnly",
+      metaMask({
+        dappMetadata: {
+          url: "https://dexafi.xyz",
+          name: "Dexa Finance",
+          iconUrl: "",
+        },
+        // checkInstallationImmediately: false,
+        // forceInjectProvider: false,
+        // extensionOnly: false
+      }),
+      walletConnect({
+        projectId: PROJECT_ID,
       }),
     ],
     transports: {
       [bscTestnet.id]: http(bscTestnetUrl),
       [bsc.id]: http(bscUrl),
     },
-    multiInjectedProviderDiscovery: true,
+    multiInjectedProviderDiscovery: false,
   });
 }
