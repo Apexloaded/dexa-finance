@@ -31,7 +31,7 @@ import {
   selectIsConnected,
 } from "@/slices/account/auth.slice";
 import useNameAvailability from "@/hooks/dexa-pay/useName.hook";
-import { baseSepolia } from "viem/chains";
+import { bscTestnet } from "viem/chains";
 import { generateToken, tokenNumeric } from "@/libs/generate-id";
 
 const getError = (error: Error): string => {
@@ -70,7 +70,7 @@ function RegisterUser() {
     functionName: "isNameFree",
     args: [username],
     query: { enabled: false },
-    chainId: baseSepolia.id,
+    chainId: bscTestnet.id,
   });
 
   // useEffect(() => {

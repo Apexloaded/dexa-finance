@@ -1,4 +1,4 @@
-import { baseSepolia } from "viem/chains";
+import { bscTestnet } from "viem/chains";
 import { generateContractHook } from "@/hooks/contracts";
 import DexaPayAbi from "@/contracts/DexaPay";
 import { DEXA_PAY } from "@/config/constants";
@@ -9,8 +9,8 @@ import { toOxString } from "@/libs/helpers";
  */
 export const useDexaPayContract = generateContractHook({
   abi: DexaPayAbi,
-  [baseSepolia.id]: {
-    chain: baseSepolia,
+  [bscTestnet.id]: {
+    chain: bscTestnet,
     address: toOxString(DEXA_PAY),
   },
 });

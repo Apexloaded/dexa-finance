@@ -1,28 +1,24 @@
 import { cookieStorage, createConfig, createStorage, http } from "wagmi";
-import { base, baseSepolia } from "wagmi/chains";
-import { coinbaseWallet, walletConnect } from "wagmi/connectors";
-import { BASE_RPC_URL } from "./constants";
+import { bsc, bscTestnet } from "wagmi/chains";
+import { coinbaseWallet } from "wagmi/connectors";
+import { RPC_URL_MAINNET, RPC_URL_TESTNET } from "./constants";
 
-//export const wagmiConfig = createWagmiConfig(BASE_RPC_URL);
-export function createWagmiConfig(rpcUrl: string, projectId?: string) {
-  const baseUrl = rpcUrl.replace(/\/v1\/(.+?)\//, "/v1/base/");
-  const baseSepoliaUrl = rpcUrl.replace(/\/v1\/(.+?)\//, "/v1/base-sepolia/");
-
-  // https://api.developer.coinbase.com/rpc/v1/base-sepolia/yOAMJm9EA18_ejH6PDlvaGdoGC2YlT4B
+export function createWagmiConfig() {
+  const bscUrl = RPC_URL_MAINNET;
+  const bscTestnetUrl = RPC_URL_TESTNET;
 
   return createConfig({
-    chains: [baseSepolia],
+    chains: [bsc, bscTestnet],
     ssr: true,
-    //storage: createStorage({ storage: cookieStorage }),
     connectors: [
       coinbaseWallet({
-        appName: "Dexa Pay",
+        appName: "Dexa Finance",
         preference: "smartWalletOnly",
       }),
     ],
     transports: {
-      [baseSepolia.id]: http(baseSepoliaUrl),
-      [base.id]: http(baseUrl),
+      [bscTestnet.id]: http(bscTestnetUrl),
+      [bsc.id]: http(bscUrl),
     },
     multiInjectedProviderDiscovery: true,
   });

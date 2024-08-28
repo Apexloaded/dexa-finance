@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const rpcUrl = process.env.NEXT_PRIVATE_RPC_URL;
+const rpcUrl = process.env.NEXT_PRIVATE_RPC_TESTNET_URL;
 export async function POST(req: Request) {
   if (rpcUrl === undefined) {
     return NextResponse.json(
@@ -14,9 +14,17 @@ export async function POST(req: Request) {
   }
 
   // forward to Coinbase Developer Platform RPC
-  return fetch(rpcUrl, req)
+  return fetch(rpcUrl, {
+    ...req,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer b611345b120143d4a489a2a23ae069a9`,
+      ...req.headers,
+    },
+  })
     .then(async (response) => {
       //console.log(response);
+      console.log(response);
       // Return the response data to the client
       return NextResponse.json(await response.json(), {
         status: response.status,

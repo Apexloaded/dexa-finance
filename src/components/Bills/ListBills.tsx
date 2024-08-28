@@ -74,8 +74,8 @@ function ListBills() {
 
   return (
     <div className="w-full flex-1">
-      <div className="px-5 flex items-start justify-between">
-        <EstTotalValue />
+      <div className="px-5 flex items-start justify-end">
+        {/* <EstTotalValue /> */}
         <Button
           kind="primary"
           size="LARGE"

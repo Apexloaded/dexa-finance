@@ -24,7 +24,7 @@ import {
   ZeroAddress,
   parseEther,
 } from "ethers";
-import { baseSepolia } from "viem/chains";
+import { bscTestnet } from "viem/chains";
 import Button from "@/components/Form/Button";
 import Image from "next/image";
 import { favicon } from "@/components/Icons/Connector";
@@ -178,7 +178,7 @@ function Pay() {
           <p className="text-sm mb-1">Network and Coin</p>
           <div className="border border-medium/20 shadow-sm rounded-md grid grid-cols-3">
             <div className="col-span-2 pl-3 py-2">
-              <p>{baseSepolia.name}</p>
+              <p>{bscTestnet.name}</p>
             </div>
             <div className="flex items-center gap-x-2 border-l border-medium/20 pl-3 py-2">
               {token && <token.icon />}

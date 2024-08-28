@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Button from "../Form/Button";
 import Image from "next/image";
 import { Connector, useAccount, useConnect, useDisconnect } from "wagmi";
-import { baseSepolia } from "viem/chains";
+import { bscTestnet } from "viem/chains";
 import useToast from "@/hooks/toast.hook";
 import { connectorIcons } from "@/components/Icons/Connector";
 import { getWagmiError } from "@/libs/helpers";
@@ -40,7 +40,7 @@ function ListConnectors({ setSignModal, onCloseModal }: Props) {
       if (!isConnected) {
         loading({ msg: "Authenticating..." });
         connect(
-          { connector, chainId: baseSepolia.id },
+          { connector, chainId: bscTestnet.id },
           {
             onSuccess(data, variables, context) {
               success({ msg: "Wallet connected" });

@@ -48,10 +48,10 @@ export default function Faucet() {
           <NavBar />
           <div className="max-w-3xl mx-auto mt-20 px-5">
             <p className="uppercase text-primary text-3xl font-semibold text-center">
-              <span className="text-dark">Dexapay</span> Faucet
+              <span className="text-dark">DexaFi</span> Faucet
             </p>
             <p className="text-center text-medium mt-1">
-              Obtain Dexapay Testnet tokens every 24 hours for seamless testing.
+              Obtain DexaFi Testnet tokens every 24 hours for seamless testing.
             </p>
             <div className="bg-light p-5 md:p-10 rounded-xl md:rounded-3xl mt-10">
               <div className="mb-5">
@@ -65,7 +65,7 @@ export default function Faucet() {
                         isRequired={true}
                       />
                       <Input
-                        placeholder="Enter your Base Sepolia Testnet Address."
+                        placeholder="Enter your BSC Testnet Address."
                         className="rounded-lg"
                         onChange={onChange}
                         value={value}
@@ -91,15 +91,9 @@ export default function Faucet() {
                 className="w-full h-12"
                 disabled={isSubmitting || isLoading || !isDirty || !isValid}
               >
-                Send 10 BNB
+                Send 10 TBNB
               </Button>
             </div>
-            <p className="text-center text-medium mt-4">
-              Request Base Sepolia ETH{" "}
-              <Link className="text-primary" href={"https://console.optimism.io/faucet"} target="_blank">
-                Here
-              </Link>
-            </p>
           </div>
         </div>
       </Section>

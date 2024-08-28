@@ -66,7 +66,7 @@ export default function Sidebar() {
             className="h-10 w-10"
           />
           <p className="text-primary hidden xl:inline text-2xl font-black">
-            Dexapay
+            DexaFi
           </p>
         </div>
         <div>

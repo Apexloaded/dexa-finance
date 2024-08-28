@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { BASE_RPC_URL } from "@/config/constants";
 import { createWagmiConfig } from "@/config/wagmi.config";
 import { AuthProvider } from "@/context/auth.context";
 import { DexaProvider } from "@/context/dexa.context";
@@ -26,7 +25,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-export const wagmiConfig = createWagmiConfig(BASE_RPC_URL);
+export const wagmiConfig = createWagmiConfig();
 
 export default function RootProviders({
   children,

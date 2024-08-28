@@ -31,8 +31,10 @@ import { CircleCheck, XIcon } from "lucide-react";
 import { Tokens } from "@/libs/tokens";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTxCount } from "@/actions/transaction.action";
-import { setDepositModal, setWithdrawModal } from "@/slices/modals/modals.slice";
-
+import {
+  setDepositModal,
+  setWithdrawModal,
+} from "@/slices/modals/modals.slice";
 
 function WalletTab() {
   const isHidden = useAppSelector(selectHideBalance);
@@ -107,6 +109,7 @@ function WalletTab() {
         };
         setTotalValue(payload);
       }
+      console.log(userBal);
       setBalances(userBal);
     };
     init();

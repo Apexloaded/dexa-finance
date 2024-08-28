@@ -33,7 +33,7 @@ function NavBar() {
                 alt={`dexa`}
                 className="h-8 w-8"
               />
-              <p className="text-primary text-2xl font-black">Dexapay</p>
+              <p className="text-primary text-2xl font-black">DexaFi</p>
             </div>
             <Button
               kind="default"

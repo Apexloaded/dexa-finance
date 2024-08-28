@@ -1,46 +1,23 @@
 "use client";
 
-import React, { Fragment, useState, useEffect, useMemo } from "react";
+import React, { useState } from "react";
 import Label from "../Form/Label";
 import Input from "../Form/Input";
 import Button from "../Form/Button";
-import { ClipboardPenLineIcon, InfoIcon, User2Icon, XIcon } from "lucide-react";
+import { ClipboardPenLineIcon } from "lucide-react";
 import Select, { Options } from "../Form/Select";
 import { Tokens } from "@/libs/tokens";
 import { useForm, Controller, FieldValues } from "react-hook-form";
-import { useAccount, useReadContract, useWriteContract } from "wagmi";
-import { useWriteContracts, useCapabilities } from "wagmi/experimental";
+import { useAccount, useWriteContract } from "wagmi";
 import { useDexa } from "@/context/dexa.context";
-import { UserBalance, UserInterface } from "@/interfaces/user.interface";
-import {
-  formatWalletAddress,
-  isLikelyUsername,
-  toOxString,
-  walletToLowercase,
-  weiToUnit,
-} from "@/libs/helpers";
+import { walletToLowercase } from "@/libs/helpers";
 import ShowError from "../Form/ShowError";
 import useClipBoard from "@/hooks/clipboard.hook";
 import useToast from "@/hooks/toast.hook";
-import ethers, {
-  parseEther,
-  isAddress,
-  hexlify,
-  toUtf8Bytes,
-  encodeBytes32String,
-  toUtf8String,
-  getBytes,
-  toQuantity,
-} from "ethers";
-import debounce from "debounce";
-import { addBeneficiary } from "@/actions/beneficiary.action";
-import { queryClient } from "../RootProviders";
+import { parseEther, hexlify, toUtf8Bytes } from "ethers";
 import TextArea from "../Form/TextArea";
 import { sendPayWithEmail } from "@/actions/request.action";
 import { useAuth } from "@/context/auth.context";
-import { stringToBytes, stringToHex } from "viem";
-import { baseSepolia } from "viem/chains";
-import useDexaCapabilities from "@/hooks/capabilities.hook";
 import useSocket from "@/hooks/socket.hook";
 import { SocketEvents } from "@/libs/enums";
 import { RequestPaymentEvent } from "@/interfaces/pay-request.interface";
@@ -58,21 +35,20 @@ function RequestPaymentForm({ closeModal }: Props) {
     clearErrors,
     formState: { errors, isSubmitting },
   } = useForm();
-  const { address, chainId } = useAccount();
+  const { address } = useAccount();
   const { paste } = useClipBoard();
   const { error, loading, success } = useToast();
   const { emit } = useSocket();
-  const { user, isSmartWallet } = useAuth();
+  const { user } = useAuth();
   const [resetKey, setResetKey] = useState<number>(0);
   const [selectedToken, setSelectedToken] = useState<Options>();
   const { dexaPayAddr, DexaPayAbi } = useDexa();
-  const { data: callID, writeContracts, isPending } = useWriteContracts();
+  const { writeContract, isPending } = useWriteContract();
   const [options] = useState(
     Tokens.map((t) => {
       return { value: t.address, name: t.symbol, icon: t.icon };
     })
   );
-  const capabilities = useDexaCapabilities({ chainId, address, isSmartWallet });
 
   const onPaste = async () => {
     const text = await paste();
@@ -92,7 +68,6 @@ function RequestPaymentForm({ closeModal }: Props) {
           walletToLowercase(t.address) ==
           walletToLowercase(`${selectedToken?.value}`)
       );
-      console.log(paymentToken);
       const paymentReq = await sendPayWithEmail({
         email: to,
         senderName: user?.name || "",
@@ -105,17 +80,12 @@ function RequestPaymentForm({ closeModal }: Props) {
       });
       const payId = hexlify(toUtf8Bytes(paymentReq.data.paymentId));
       const email = hexlify(toUtf8Bytes(paymentReq.data.email));
-      writeContracts(
+      writeContract(
         {
-          contracts: [
-            {
-              abi: DexaPayAbi,
-              address: dexaPayAddr,
-              functionName: "requestPayment",
-              args: [token, parseEther(`${amount}`), email, remark, payId],
-            },
-          ],
-          capabilities,
+          abi: DexaPayAbi,
+          address: dexaPayAddr,
+          functionName: "requestPayment",
+          args: [token, parseEther(`${amount}`), email, remark, payId],
         },
         {
           onSuccess: async (data) => {
@@ -132,6 +102,7 @@ function RequestPaymentForm({ closeModal }: Props) {
             resetForm();
           },
           onError(err) {
+            console.log(err);
             error({ msg: `${err.message}` });
           },
         }

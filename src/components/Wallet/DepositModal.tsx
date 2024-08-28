@@ -118,7 +118,6 @@ function DepositModal() {
   };
 
   const onSubmit = async (payload: FieldValues) => {
-
       const { token, amount } = payload;
       await initSubmit({
         amount,

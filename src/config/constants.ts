@@ -1,10 +1,11 @@
-import { baseSepolia } from "viem/chains";
+import { bscTestnet } from "viem/chains";
 
-export const EXPECTED_CHAIN = baseSepolia;
-export const BASE_RPC_URL = "/api/rpc";
+export const EXPECTED_CHAIN = bscTestnet;
+export const RPC_URL_TESTNET = process.env.NEXT_PUBLIC_RPC_TESTNET_URL;
+export const RPC_URL_MAINNET = process.env.NEXT_PUBLIC_RPC_MAINNET_URL;
 export const DEXA_PAY = process.env.NEXT_PUBLIC_DEXA_PAY || "";
 export const DEXA_BILL = process.env.NEXT_PUBLIC_DEXA_BILL || "";
-export const HOSTNAME = process.env.NEXT_PUBLIC_HOSTNAME || "https://www.dexapay.xyz";
+export const HOSTNAME = process.env.NEXT_PUBLIC_HOSTNAME || "https://www.dexafi.xyz";
 export const PAYMASTER_URL = process.env.NEXT_PUBLIC_PAYMASTER_URL;
 export const RECAPTCHA_SECRET =
   process.env.NEXT_PRIVATE_RECAPTCHA_SECRET_KEY || "";

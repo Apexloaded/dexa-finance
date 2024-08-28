@@ -244,7 +244,7 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
                         <TabsHeader
                           isActiveBg={false}
                           isActiveText={true}
-                          title="Pay ID"
+                          title="Address"
                           value="tab1"
                           activeTabId={activeTab}
                           onTabChange={onTabChange}
@@ -265,7 +265,7 @@ function TransferModal({ isOpen, setIsOpen }: Props) {
                           {activeTab == "tab1" && (
                             <div className="flex-1 mt-6">
                               <Label
-                                title="Dexa Pay ID"
+                                title="Dexa Wallet Address"
                                 isMargin={true}
                                 isRequired={true}
                               />

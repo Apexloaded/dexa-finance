@@ -36,7 +36,7 @@ function WelcomeText() {
           </div>
           <div className="max-w-lg mt-6 pb-20">
             <p className="text-xl">
-              Dexapay helps individuals get paid by anyone, anywhere in the
+              Dexa Finance helps individuals get paid by anyone, anywhere in the
               world using cryptocurrecy.
             </p>
             <div className="flex items-start md:items-center flex-col md:flex-row gap-x-1 mt-10">
