@@ -1,10 +1,10 @@
 "use client";
 
+import React, { useState } from "react";
 import Container from "@/components/layouts/Container";
 import Section from "@/components/layouts/Section";
 import NavBar from "@/components/ui/NavBar";
 import { CheckCircle } from "lucide-react";
-import React, { useState } from "react";
 
 export default function Roadmap() {
   const roadmapItems = [
