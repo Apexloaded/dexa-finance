@@ -14,6 +14,7 @@ export const routes = {
   register: "/register",
   about: "/about",
   faucet: "/faucet",
+  roadmap: "/roadmap",
   app: {
     home: "/home",
     payments: {

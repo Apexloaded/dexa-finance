@@ -156,8 +156,7 @@ function CreateBillForm({ closeModal }: Props) {
             <div className="flex items-center relative bg-light">
               <Input
                 type={"text"}
-                isOutline={false}
-                className="bg-white border rounded-md border-medium/60 text-sm"
+                className="bg-white border w-full rounded-md border-medium/60 text-sm"
                 placeholder="Name your bill"
                 onChange={onChange}
                 value={value ? value : ""}
